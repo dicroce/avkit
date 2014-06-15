@@ -14,7 +14,7 @@ set(SOURCES source/argb24_to_yuv420p.cpp
             source/locky.cpp
             source/utils.cpp)
 
-set(COMMON_LIBS cppkit)
+set(COMMON_LIBS cppkit avcodec avformat avutil swscale x264)
 
 if(CMAKE_SYSTEM MATCHES "Linux-")
     add_definitions(-D__STDC_CONSTANT_MACROS)
