@@ -7,7 +7,8 @@ set(SOURCES source/framework.cpp
             source/h264_decoder_test.cpp
             source/h264_encoder_test.cpp
             source/h264_transcoder_test.cpp
-            source/jpeg_encoder_test.cpp)
+            source/jpeg_encoder_test.cpp
+            source/av_packet_test.cpp)
 
 set(COMMON_LIBS cppkit avkit)
 
