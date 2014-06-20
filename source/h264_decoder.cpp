@@ -22,7 +22,8 @@ h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttem
     _scaler( NULL ),
     _outputWidth( 0 ),
     _outputHeight( 0 ),
-    _decodeAttempts( decodeAttempts )
+    _decodeAttempts( decodeAttempts ),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     if( !_codec )
         CK_THROW(( "Failed to find H264 decoder." ));
@@ -57,7 +58,8 @@ h264_decoder::h264_decoder( av_demuxer& deMuxer, const struct codec_options& opt
     _scaler( NULL ),
     _outputWidth( 0 ),
     _outputHeight( 0 ),
-    _decodeAttempts( decodeAttempts )
+    _decodeAttempts( decodeAttempts ),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     if( !_codec )
         CK_THROW(( "Failed to find H264 decoder." ));
@@ -99,12 +101,12 @@ h264_decoder::~h264_decoder() throw()
     }
 }
 
-void h264_decoder::decode( uint8_t* frame, size_t frameSize )
+void h264_decoder::decode( std::shared_ptr<av_packet> frame )
 {
     AVPacket inputPacket;
     av_init_packet( &inputPacket );
-    inputPacket.data = frame;
-    inputPacket.size = frameSize;
+    inputPacket.data = frame->map();
+    inputPacket.size = frame->get_data_size();
 
     int gotPicture = 0;
     int ret = 0;
@@ -129,11 +131,6 @@ void h264_decoder::decode( uint8_t* frame, size_t frameSize )
 
     if( gotPicture < 1 )
         CK_THROW(( "Unable to decode frame." ));
-}
-
-void h264_decoder::decode( shared_ptr<ck_memory> frame )
-{
-    decode( frame->map().get_ptr(), frame->size_data() );
 }
 
 uint16_t h264_decoder::get_input_width() const
@@ -178,21 +175,17 @@ uint16_t h264_decoder::get_output_height() const
     return _outputHeight;
 }
 
-size_t h264_decoder::get_yuv420p_size() const
-{
-    if( (_outputWidth == 0) || (_outputHeight == 0) )
-        return _context->width * _context->height * 1.5;
-
-    return _outputWidth * _outputHeight * 1.5;
-}
-
-void h264_decoder::make_yuv420p( uint8_t* dest )
+shared_ptr<av_packet> h264_decoder::get()
 {
     if( _outputWidth == 0 )
         _outputWidth = _context->width;
 
     if( _outputHeight == 0 )
         _outputHeight = _context->height;
+
+    size_t pictureSize = _outputWidth * _outputHeight * 1.5;
+    shared_ptr<av_packet> pkt = _pf->get( pictureSize );
+    pkt->set_data_size( pictureSize );
 
     if( _scaler == NULL )
     {
@@ -212,6 +205,8 @@ void h264_decoder::make_yuv420p( uint8_t* dest )
                       "(input_width=%u,input_height=%u,output_width=%u,output_height=%u).",
                       _context->width, _context->height, _outputWidth, _outputHeight ));
     }
+
+    uint8_t* dest = pkt->map();
 
     AVPicture pict;
     pict.data[0] = dest;
@@ -233,15 +228,8 @@ void h264_decoder::make_yuv420p( uint8_t* dest )
                          pict.linesize );
     if( ret <= 0 )
         CK_THROW(( "Unable to create YUV420P image." ));
-}
 
-shared_ptr<ck_memory> h264_decoder::make_yuv420p()
-{
-    size_t pictureSize = get_yuv420p_size();
-    shared_ptr<ck_memory> buffer = make_shared<ck_memory>( pictureSize + DEFAULT_PADDING );
-    uint8_t* p = buffer->extend_data( pictureSize ).get_ptr();
-    make_yuv420p( p );
-    return buffer;
+    return std::move( pkt );
 }
 
 void h264_decoder::_destroy_scaler()

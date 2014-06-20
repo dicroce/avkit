@@ -5,7 +5,6 @@
 #include "avkit/jpeg_encoder.h"
 #include "avkit/locky.h"
 #include "avkit/options.h"
-#include "cppkit/ck_memory.h"
 
 extern "C"
 {
@@ -27,8 +26,7 @@ void h264_encoder_test::setup()
     locky::register_ffmpeg();
 
     // pic_0 comes from the above included file pic.c
-    _pic = make_shared<ck_memory>();
-    memcpy( _pic->extend_data( pic_0_len ).get_ptr(), pic_0, pic_0_len );
+    _pic = make_shared<av_packet>( pic_0, pic_0_len );
 }
 
 void h264_encoder_test::teardown()
@@ -46,10 +44,12 @@ void h264_encoder_test::test_encode_key()
     shared_ptr<h264_encoder> e;
     UT_ASSERT_NO_THROW( e = make_shared<h264_encoder>( get_fast_h264_encoder_options( 500000, 1280, 720, 15, 1, 15 ) ) );
 
-    shared_ptr<ck_memory> output;
-    UT_ASSERT_NO_THROW( output = e->encode_yuv420p( _pic, h264_encoder::FRAME_TYPE_KEY ) );
+    UT_ASSERT_NO_THROW( e->encode_yuv420p( _pic, h264_encoder::FRAME_TYPE_KEY ) );
 
-    UT_ASSERT( output->size_data() > 0 );
+    shared_ptr<av_packet> output;
+    UT_ASSERT_NO_THROW( output = e->get() );
+
+    UT_ASSERT( output->get_data_size() > 0 );
 }
 
 void h264_encoder_test::test_encode_gop()
@@ -63,14 +63,15 @@ void h264_encoder_test::test_encode_gop()
     shared_ptr<h264_encoder> e;
     UT_ASSERT_NO_THROW( e = make_shared<h264_encoder>( get_fast_h264_encoder_options( 500000, 640, 360, 15, 1, 5 ) ) );
 
-    list<shared_ptr<ck_memory> > outputFrames;
+    list<shared_ptr<av_packet> > outputFrames;
 
     for( int i = 0; i < NUM_FRAMES_IN_GOP; i++ )
     {
         int index = i % NUM_FRAMES_IN_GOP;
-        d->decode( gop[index].frame, gop[index].frameSize );
-
-        outputFrames.push_back( e->encode_yuv420p( d->make_yuv420p() ) );
+        shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+        d->decode( pkt );
+        e->encode_yuv420p( d->get() );
+        outputFrames.push_back( e->get() );
     }
 
     UT_ASSERT_NO_THROW( d = make_shared<h264_decoder>( get_fast_h264_decoder_options() ) );
@@ -78,14 +79,14 @@ void h264_encoder_test::test_encode_gop()
     d->set_output_width( 640 );
     d->set_output_height( 360 );
 
-    list<shared_ptr<ck_memory> >::iterator i;
+    list<shared_ptr<av_packet> >::iterator i;
     for( i = outputFrames.begin(); i != outputFrames.end(); i++ )
     {
-        shared_ptr<ck_memory> frame = *i;
-        d->decode( frame->map().get_ptr(), frame->size_data() );
+        shared_ptr<av_packet> frame = *i;
+        d->decode( frame );
 
-        shared_ptr<ck_memory> pic = make_shared<ck_memory>();
-        UT_ASSERT_NO_THROW( pic = d->make_yuv420p() );
+        shared_ptr<av_packet> pic;
+        UT_ASSERT_NO_THROW( pic = d->get() );
 
 #if 0
         shared_ptr<jpeg_encoder> e = make_shared<jpeg_encoder>( get_jpeg_options( 640, 360 ) );

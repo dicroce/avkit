@@ -13,7 +13,8 @@ set(SOURCES source/argb24_to_yuv420p.cpp
             source/jpeg_encoder.cpp
             source/locky.cpp
             source/utils.cpp
-            source/av_packet.cpp)
+            source/av_packet.cpp
+            source/av_packet_factory.cpp)
 
 set(COMMON_LIBS cppkit avcodec avformat avutil swscale x264)
 

@@ -20,7 +20,6 @@ REGISTER_TEST_FIXTURE(av_muxer_test);
 
 void av_muxer_test::setup()
 {
-//    av_register_all();
     locky::register_ffmpeg();
 
     // pic_0 comes from the above included file pic.c
@@ -54,10 +53,10 @@ void av_muxer_test::test_mp4()
     {
         int index = i % NUM_FRAMES_IN_GOP;
 
-        d->decode( gop[index].frame,
-                   gop[index].frameSize );
-
-        c->write_video_frame( e->encode_yuv420p( d->make_yuv420p() ), ((i % 15) == 0) ? true : false );
+        shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+        d->decode( pkt );
+        e->encode_yuv420p( d->get() );
+        c->write_video_packet( e->get(), ((i % 15) == 0) ? true : false );
     }
 
     c->finalize_file();
@@ -81,8 +80,8 @@ void av_muxer_test::test_recontainerize()
     for( int i = 0; i < NUM_FRAMES_IN_GOP; i++ )
     {
         int index = i % NUM_FRAMES_IN_GOP;
-
-        c->write_video_frame( gop[index].frame, gop[index].frameSize, ((i % 15) == 0) ? true : false );
+        shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+        c->write_video_packet( pkt, ((i % 15) == 0) ? true : false );
     }
 
     c->finalize_file();

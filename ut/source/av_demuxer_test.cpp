@@ -39,7 +39,8 @@ void av_demuxer_test::setup()
         for( int i = 0; i < NUM_FRAMES_IN_GOP; i++ )
         {
             int index = i % NUM_FRAMES_IN_GOP;
-            m->write_video_frame( gop[index].frame, gop[index].frameSize, ((i % 15) == 0) ? true : false );
+            shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+            m->write_video_packet( pkt, ((i % 15) == 0) ? true : false );
         }
 
         m->finalize_file();
@@ -53,7 +54,8 @@ void av_demuxer_test::setup()
         for( int i = 0; i < (NUM_FRAMES_IN_GOP * 10); i++ )
         {
             int index = i % NUM_FRAMES_IN_GOP;
-            m->write_video_frame( gop[index].frame, gop[index].frameSize, ((i % 15) == 0) ? true : false );
+            shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+            m->write_video_packet( pkt, ((i % 15) == 0) ? true : false );
         }
 
         m->finalize_file();
@@ -90,12 +92,11 @@ void av_demuxer_test::test_examine_file()
 
         bool keyness = ((i % NUM_FRAMES_IN_GOP) == 0) ? true : false;
 
-        UT_ASSERT( deMuxer->get_frame_size() == gop[index].frameSize );
         UT_ASSERT( deMuxer->is_key() == keyness );
 
-        shared_ptr<ck_memory> frame = deMuxer->get_frame();
+        shared_ptr<av_packet> frame = deMuxer->get();
 
-        UT_ASSERT( frame->size_data() == gop[index].frameSize );
+        UT_ASSERT( frame->get_data_size() == gop[index].frameSize );
 
         // XXX Note: The contents of the frame cannot be compared for equality because FFMPEG stores the frames in
         // annexb format (with start codes).
@@ -123,12 +124,11 @@ void av_demuxer_test::test_file_from_memory()
 
         bool keyness = ((i % NUM_FRAMES_IN_GOP) == 0) ? true : false;
 
-        UT_ASSERT( deMuxer->get_frame_size() == gop[index].frameSize );
         UT_ASSERT( deMuxer->is_key() == keyness );
 
-        shared_ptr<ck_memory> frame = deMuxer->get_frame();
+        shared_ptr<av_packet> frame = deMuxer->get();
 
-        UT_ASSERT( frame->size_data() == gop[index].frameSize );
+        UT_ASSERT( frame->get_data_size() == gop[index].frameSize );
 
         // XXX Note: The contents of the frame cannot be compared for equality because FFMPEG stores the frames in
         // annexb format (with start codes).

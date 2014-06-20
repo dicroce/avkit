@@ -3,8 +3,10 @@
 #define __avkit_av_muxer_h
 
 #include "avkit/options.h"
-
+#include "avkit/av_packet.h"
+#include "avkit/av_packet_factory.h"
 #include "cppkit/ck_memory.h"
+#include <memory>
 
 extern "C"
 {
@@ -18,31 +20,32 @@ class av_muxer
 {
 public:
 
-    enum OUTPUT_LOCATION
+    CK_API enum OUTPUT_LOCATION
     {
         OUTPUT_LOCATION_FILE,
         OUTPUT_LOCATION_BUFFER
     };
 
-    av_muxer( const struct codec_options& options,
-              const cppkit::ck_string& fileName,
-              OUTPUT_LOCATION location );
+    CK_API av_muxer( const struct codec_options& options,
+                     const cppkit::ck_string& fileName,
+                     OUTPUT_LOCATION location );
 
-    virtual ~av_muxer() throw();
+    CK_API virtual ~av_muxer() throw();
 
-    cppkit::ck_string get_file_name() const;
+    CK_API void set_packet_factory( std::shared_ptr<av_packet_factory> pf ) { _pf = pf; }
 
-    void set_extra_data( std::shared_ptr<cppkit::ck_memory> extraData );
+    CK_API cppkit::ck_string get_file_name() const;
 
-    void write_video_frame( uint8_t* data, size_t size, bool keyFrame );
-    void write_video_frame( std::shared_ptr<cppkit::ck_memory> frame, bool keyFrame );
+    CK_API void set_extra_data( std::shared_ptr<cppkit::ck_memory> extraData );
 
-    void flush();
+    CK_API void write_video_packet( std::shared_ptr<av_packet> input, bool keyFrame );
 
-    void finalize_buffer( std::shared_ptr<cppkit::ck_memory> buffer );
-    void finalize_file();
+    CK_API void flush();
 
-    void apply_codec_options( const struct codec_options& options );
+    CK_API void finalize_buffer( std::shared_ptr<cppkit::ck_memory> buffer );
+    CK_API void finalize_file();
+
+    CK_API void apply_codec_options( const struct codec_options& options );
 
 private:
     av_muxer( const av_muxer& obj );
@@ -64,6 +67,7 @@ private:
     int64_t _numVideoFramesWritten;
     bool _isTS;       // true if our container type is mpeg2ts
     int64_t _fileNum; // the number of files made (really only useful for mpeg2ts)o
+    std::shared_ptr<av_packet_factory> _pf;
 };
 
 }

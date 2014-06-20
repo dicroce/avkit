@@ -41,7 +41,8 @@ void h264_transcoder_test::setup()
         for( int i = 0; i < (NUM_FRAMES_IN_GOP * 10); i++ )
         {
             int index = i % NUM_FRAMES_IN_GOP;
-            m->write_video_frame( gop[index].frame, gop[index].frameSize, ((i % 15) == 0) ? true : false );
+            shared_ptr<av_packet> pkt = make_shared<av_packet>( gop[index].frame, gop[index].frameSize, false );
+            m->write_video_packet( pkt, ((i % 15) == 0) ? true : false );
         }
 
         m->finalize_file();
@@ -79,7 +80,7 @@ void h264_transcoder_test::test_basic()
     {
         if( transcoder.decode( dm, decoder ) )
         {
-            transcoder.encode_yuv420p_and_mux( encoder, muxer, decoder.make_yuv420p() );
+            transcoder.encode_yuv420p_and_mux( encoder, muxer, decoder.get() );
         }
     }
 

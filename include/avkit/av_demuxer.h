@@ -2,6 +2,8 @@
 #ifndef __avkit_av_demuxer_h
 #define __avkit_av_demuxer_h
 
+#include "avkit/av_packet.h"
+#include "avkit/av_packet_factory.h"
 #include "cppkit/ck_memory.h"
 #include "cppkit/ck_nullable.h"
 #include <utility>
@@ -52,36 +54,36 @@ class av_demuxer
     friend class h264_decoder;
 
 public:
-    av_demuxer( const cppkit::ck_string& fileName, bool annexBFilter = true );
+    CK_API av_demuxer( const cppkit::ck_string& fileName, bool annexBFilter = true );
 
-    av_demuxer( const uint8_t* buffer,
-               size_t bufferSize,
-               bool annexBFilter = true );
+    CK_API av_demuxer( const uint8_t* buffer,
+                       size_t bufferSize,
+                       bool annexBFilter = true );
 
-    av_demuxer( std::shared_ptr<cppkit::ck_memory> buffer, bool annexBFilter = true );
+    CK_API av_demuxer( std::shared_ptr<cppkit::ck_memory> buffer, bool annexBFilter = true );
 
-    virtual ~av_demuxer() throw();
+    CK_API virtual ~av_demuxer() throw();
 
-    cppkit::ck_string get_file_name() const;
+    CK_API void set_packet_factory( std::shared_ptr<av_packet_factory> pf ) { _pf = pf; }
 
-    double get_seconds_between_frames( int streamIndex ) const;
-    std::pair<int,int> get_time_base( int streamIndex ) const;
+    CK_API cppkit::ck_string get_file_name() const;
 
-    std::vector<stream_info> get_stream_types() const;
-    int get_video_stream_index() const;
-    int get_primary_audio_stream_index() const;
+    CK_API double get_seconds_between_frames( int streamIndex ) const;
+    CK_API std::pair<int,int> get_time_base( int streamIndex ) const;
 
-    bool read_frame( int& streamIndex );
-    bool end_of_file() const;
-    bool is_key() const;
+    CK_API std::vector<stream_info> get_stream_types() const;
+    CK_API int get_video_stream_index() const;
+    CK_API int get_primary_audio_stream_index() const;
 
-    size_t get_frame_size() const;
-    void get_frame( uint8_t* dest ) const;
-    std::shared_ptr<cppkit::ck_memory> get_frame() const;
+    CK_API bool read_frame( int& streamIndex );
+    CK_API bool end_of_file() const;
+    CK_API bool is_key() const;
 
-    static std::shared_ptr<cppkit::ck_memory> load_file( const cppkit::ck_string& fileName );
+    CK_API std::shared_ptr<av_packet> get() const;
 
-    static struct stream_statistics get_video_stream_statistics( const cppkit::ck_string& fileName );
+    CK_API static std::shared_ptr<cppkit::ck_memory> load_file( const cppkit::ck_string& fileName );
+
+    CK_API static struct stream_statistics get_video_stream_statistics( const cppkit::ck_string& fileName );
 
 private:
     av_demuxer( const av_demuxer& obj );
@@ -111,7 +113,7 @@ private:
     int _videoStreamIndex;
     int _audioPrimaryStreamIndex;
     AVBitStreamFilterContext* _bsfc;
-    bool _firstFrame;
+    std::shared_ptr<av_packet_factory> _pf;
 };
 
 }

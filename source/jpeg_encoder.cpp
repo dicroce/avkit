@@ -7,11 +7,15 @@ using namespace avkit;
 using namespace cppkit;
 using namespace std;
 
+static const size_t DEFAULT_JPEG_ENCODE_BUFFER_SIZE = (1024*1024);
+
 jpeg_encoder::jpeg_encoder( const struct codec_options& options, int encodeAttempts ) :
     _codec( avcodec_find_encoder( CODEC_ID_MJPEG ) ),
     _context( avcodec_alloc_context3( _codec ) ),
     _options( options ),
-    _encodeAttempts( encodeAttempts )
+    _encodeAttempts( encodeAttempts ),
+    _output(),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     if( !_codec )
         CK_THROW(("Unable to locate MJPEG codec."));
@@ -65,10 +69,14 @@ jpeg_encoder::~jpeg_encoder() throw()
     av_free( _context );
 }
 
-size_t jpeg_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outputSize )
+void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
 {
     AVFrame frame;
     avcodec_get_frame_defaults( &frame );
+
+    _output = _pf->get( DEFAULT_JPEG_ENCODE_BUFFER_SIZE );
+
+    uint8_t* pic = input->map();
 
     frame.data[0] = pic;
     pic += (_context->width * _context->height);
@@ -87,8 +95,8 @@ size_t jpeg_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outpu
     do
     {
         av_init_packet( &pkt );
-        pkt.data = output;
-        pkt.size = outputSize;
+        pkt.data = _output->map();
+        pkt.size = _output->get_buffer_size();
 
         if( avcodec_encode_video2( _context,
                                    &pkt,
@@ -100,16 +108,12 @@ size_t jpeg_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outpu
 
     } while( gotPacket == 0 && (attempt < _encodeAttempts) );
 
-    return pkt.size;
+    _output->set_data_size( pkt.size );
 }
 
-shared_ptr<ck_memory> jpeg_encoder::encode_yuv420p( shared_ptr<ck_memory> pic )
+shared_ptr<av_packet> jpeg_encoder::get()
 {
-    shared_ptr<ck_memory> frame = make_shared<ck_memory>();
-    uint8_t* p = frame->extend_data( (1024*1024) ).get_ptr();
-    size_t outputSize = encode_yuv420p( pic->map().get_ptr(), p, frame->size_data() );
-    frame->set_data_size( outputSize );
-    return frame;
+    return std::move( _output );
 }
 
 void jpeg_encoder::write_jpeg_file( const cppkit::ck_string& fileName, shared_ptr<cppkit::ck_memory> jpeg )

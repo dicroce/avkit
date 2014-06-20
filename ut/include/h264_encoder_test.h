@@ -1,7 +1,7 @@
 
 #include "framework.h"
 #include <memory>
-#include "cppkit/ck_memory.h"
+#include "avkit/av_packet.h"
 
 class h264_encoder_test : public test_fixture
 {
@@ -22,5 +22,5 @@ public:
     void test_encode_gop();
 
 private:
-    std::shared_ptr<cppkit::ck_memory> _pic;
+    std::shared_ptr<avkit::av_packet> _pic;
 };

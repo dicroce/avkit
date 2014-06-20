@@ -3,7 +3,8 @@
 #define __avkit_jpeg_encoder_h
 
 #include "avkit/options.h"
-
+#include "avkit/av_packet.h"
+#include "avkit/av_packet_factory.h"
 #include "cppkit/ck_memory.h"
 
 extern "C"
@@ -19,15 +20,17 @@ const int JPEG_ENCODE_ATTEMPTS = 16;
 class jpeg_encoder
 {
 public:
-    jpeg_encoder( const struct codec_options& options, int encodeAttempts = JPEG_ENCODE_ATTEMPTS );
+    CK_API jpeg_encoder( const struct codec_options& options, int encodeAttempts = JPEG_ENCODE_ATTEMPTS );
 
-    virtual ~jpeg_encoder() throw();
+    CK_API virtual ~jpeg_encoder() throw();
 
-    size_t encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outputSize );
+    CK_API void set_packet_factory( std::shared_ptr<av_packet_factory> pf ) { _pf = pf; }
 
-    std::shared_ptr<cppkit::ck_memory> encode_yuv420p( std::shared_ptr<cppkit::ck_memory> pic );
+    CK_API void encode_yuv420p( std::shared_ptr<av_packet> input );
 
-    static void write_jpeg_file( const cppkit::ck_string& fileName, std::shared_ptr<cppkit::ck_memory> jpeg );
+    CK_API std::shared_ptr<av_packet> get();
+
+    CK_API static void write_jpeg_file( const cppkit::ck_string& fileName, std::shared_ptr<cppkit::ck_memory> jpeg );
 
 private:
     jpeg_encoder( const jpeg_encoder& obj );
@@ -37,6 +40,8 @@ private:
     AVCodecContext* _context;
     struct codec_options _options;
     int _encodeAttempts;
+    std::shared_ptr<av_packet> _output;
+    std::shared_ptr<av_packet_factory> _pf;
 };
 
 }

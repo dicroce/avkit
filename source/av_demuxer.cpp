@@ -29,7 +29,7 @@ av_demuxer::av_demuxer( const ck_string& fileName, bool annexBFilter ) :
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
     _bsfc( (annexBFilter) ? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
-    _firstFrame( true )
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
@@ -53,7 +53,8 @@ av_demuxer::av_demuxer( const uint8_t* buffer,
     _streamTypes(),
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
-    _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL )
+    _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
@@ -77,7 +78,8 @@ av_demuxer::av_demuxer( shared_ptr<cppkit::ck_memory> buffer, bool annexBFilter 
     _streamTypes(),
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
-    _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL )
+    _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
@@ -179,32 +181,24 @@ bool av_demuxer::is_key() const
     return false;
 }
 
-size_t av_demuxer::get_frame_size() const
+shared_ptr<av_packet> av_demuxer::get() const
 {
-    // If we have bitstream filtering turned on and the currently demuxed packet was from the
-    // video stream, use the filtered packet.
-    if( _bsfc && (_deMuxPkt.stream_index == _videoStreamIndex) )
-        return (size_t)_filterPkt.size;
-    else return (size_t)_deMuxPkt.size;
-}
+    shared_ptr<av_packet> pkt;
 
-void av_demuxer::get_frame( uint8_t* dest ) const
-{
-    // If we have bitstream filtering turned on and the currently demuxed packet was from the
-    // video stream, use the filtered packet.
     if( _bsfc && (_deMuxPkt.stream_index == _videoStreamIndex) )
-        memcpy( dest, _filterPkt.data, _filterPkt.size );
-    else memcpy( dest, _deMuxPkt.data, _deMuxPkt.size );
-}
+    {
+        pkt = _pf->get( (size_t)_filterPkt.size );
+        pkt->set_data_size( _filterPkt.size );
+        memcpy( pkt->map(), _filterPkt.data, _filterPkt.size );
+    }
+    else
+    {
+        pkt = _pf->get( (size_t)_deMuxPkt.size );
+        pkt->set_data_size( _deMuxPkt.size );
+        memcpy( pkt->map(), _deMuxPkt.data, _deMuxPkt.size );
+    }
 
-shared_ptr<ck_memory> av_demuxer::get_frame() const
-{
-    shared_ptr<ck_memory> frame = make_shared<ck_memory>();
-    if( _bsfc && (_deMuxPkt.stream_index == _videoStreamIndex) )
-        frame->set_data_size( _filterPkt.size );
-    else frame->set_data_size( _deMuxPkt.size );
-    get_frame( frame->map().get_ptr() );
-    return frame;
+    return std::move( pkt );
 }
 
 shared_ptr<ck_memory> av_demuxer::load_file( const cppkit::ck_string& fileName )
@@ -273,7 +267,8 @@ struct stream_statistics av_demuxer::get_video_stream_statistics( const cppkit::
             }
         }
 
-        avgFrameSize.add_sample( dm.get_frame_size() );
+        shared_ptr<av_packet> pkt = dm.get();
+        avgFrameSize.add_sample( pkt->get_data_size() );
 
         currentIndex++;
     }

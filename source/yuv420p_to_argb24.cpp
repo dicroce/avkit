@@ -15,7 +15,8 @@ using namespace std;
 #define CLIP(val,min,max) (val<min)?min:(val>max)?max:val
 
 yuv420p_to_argb24::yuv420p_to_argb24() :
-    _rgb24()
+    _rgb24(),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
 }
 
@@ -23,13 +24,15 @@ yuv420p_to_argb24::~yuv420p_to_argb24() throw()
 {
 }
 
-void yuv420p_to_argb24::transform( uint8_t* src, size_t width, size_t height )
+void yuv420p_to_argb24::transform( shared_ptr<av_packet> input, size_t width, size_t height )
 {
-    _rgb24 = make_shared<ck_memory>();
+    size_t dataSize = height * (width*4);
+    _rgb24 = _pf->get( dataSize );
+    _rgb24->set_data_size( dataSize );
 
-    uint8_t* dst = _rgb24->extend_data( height * (width*4) ).get_ptr();
+    uint8_t* dst = _rgb24->map();
 
-    const uint8_t* srcY = src;
+    const uint8_t* srcY = input->map();
     const uint8_t* srcU = srcY + (width*height);
     const uint8_t* srcV = srcU + ((width/2)*(height/2));
 
@@ -65,22 +68,7 @@ void yuv420p_to_argb24::transform( uint8_t* src, size_t width, size_t height )
     }
 }
 
-void yuv420p_to_argb24::transform( shared_ptr<ck_memory> src, size_t width, size_t height )
+shared_ptr<av_packet> yuv420p_to_argb24::get()
 {
-    transform( src->map().get_ptr(), width, height );
-}
-
-size_t yuv420p_to_argb24::get_argb24_size() const
-{
-    return _rgb24->size_data();
-}
-
-void yuv420p_to_argb24::get_argb24( uint8_t* dest ) const
-{
-    memcpy( dest, _rgb24->map().get_ptr(), _rgb24->size_data() );
-}
-
-shared_ptr<ck_memory> yuv420p_to_argb24::get_argb24() const
-{
-    return ck_memory::clone( _rgb24 );
+    return std::move( _rgb24 );
 }

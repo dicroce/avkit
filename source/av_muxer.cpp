@@ -8,6 +8,7 @@ extern "C"
 
 using namespace avkit;
 using namespace cppkit;
+using namespace std;
 
 av_muxer::av_muxer( const struct codec_options& options,
                     const ck_string& fileName,
@@ -21,7 +22,8 @@ av_muxer::av_muxer( const struct codec_options& options,
     _oweTrailer( false ),
     _numVideoFramesWritten( 0 ),
     _isTS( _fileName.to_lower().ends_with( ".ts" ) ),
-    _fileNum( 0 )
+    _fileNum( 0 ),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     _context = avformat_alloc_context();
     if( !_context )
@@ -88,7 +90,7 @@ void av_muxer::set_extra_data( std::shared_ptr<cppkit::ck_memory> extraData )
     }
 }
 
-void av_muxer::write_video_frame( uint8_t* data, size_t size, bool keyFrame )
+void av_muxer::write_video_packet( shared_ptr<av_packet> input, bool keyFrame )
 {
     if( _context->pb == NULL )
         _open_io();
@@ -121,8 +123,8 @@ void av_muxer::write_video_frame( uint8_t* data, size_t size, bool keyFrame )
     av_init_packet( &pkt );
 
     pkt.stream_index = _stream->index;
-    pkt.data = data;
-    pkt.size = size;
+    pkt.data = input->map();
+    pkt.size = input->get_data_size();
 
     pkt.pts = _ts;
     pkt.dts = _ts;
@@ -135,11 +137,6 @@ void av_muxer::write_video_frame( uint8_t* data, size_t size, bool keyFrame )
         CK_THROW(("Unable to write video frame."));
 
     _numVideoFramesWritten++;
-}
-
-void av_muxer::write_video_frame( std::shared_ptr<ck_memory> frame, bool keyFrame )
-{
-    write_video_frame( frame->map().get_ptr(), frame->size_data(), keyFrame );
 }
 
 void av_muxer::flush()

@@ -9,7 +9,8 @@ using namespace cppkit;
 using namespace std;
 
 argb24_to_yuv420p::argb24_to_yuv420p() :
-    _yuv420()
+    _yuv420(),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
 }
 
@@ -17,11 +18,14 @@ argb24_to_yuv420p::~argb24_to_yuv420p() throw()
 {
 }
 
-void argb24_to_yuv420p::transform( uint8_t* src, size_t width, size_t height )
+void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size_t height )
 {
-    _yuv420 = make_shared<ck_memory>();
+    size_t pictureSize = width * height * 1.5;
+    _yuv420 = _pf->get( pictureSize );
+    _yuv420->set_data_size( pictureSize );
 
-    uint8_t* yuv = _yuv420->extend_data( width * height * 1.5 ).get_ptr();
+    uint8_t* yuv = _yuv420->map();
+    uint8_t* src = pkt->map();
 
     /// Cairo ARGB24 buffers are stored "native endian" as 8 bit unsigned integer quantities in the order
     /// ARGB.
@@ -82,22 +86,7 @@ void argb24_to_yuv420p::transform( uint8_t* src, size_t width, size_t height )
     }
 }
 
-void argb24_to_yuv420p::transform( shared_ptr<ck_memory> src, size_t width, size_t height )
+shared_ptr<av_packet> argb24_to_yuv420p::get() const
 {
-    transform( src->map().get_ptr(), width, height );
-}
-
-size_t argb24_to_yuv420p::get_yuv420p_size() const
-{
-    return _yuv420->size_data();
-}
-
-void argb24_to_yuv420p::get_yuv420p( uint8_t* dest ) const
-{
-    memcpy( dest, _yuv420->map().get_ptr(), _yuv420->size_data() );
-}
-
-shared_ptr<cppkit::ck_memory> argb24_to_yuv420p::get_yuv420p() const
-{
-    return ck_memory::clone( _yuv420 );
+    return std::move( _yuv420 );
 }

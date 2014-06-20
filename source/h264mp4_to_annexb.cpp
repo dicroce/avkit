@@ -10,7 +10,8 @@ using namespace std;
 h264mp4_to_annexb::h264mp4_to_annexb( av_demuxer& deMuxer ) :
     _bsfc( av_bitstream_filter_init( "h264_mp4toannexb" ) ),
     _codec( deMuxer._context->streams[deMuxer._videoStreamIndex]->codec ),
-    _filteredPacket()
+    _filteredPacket(),
+    _pf( std::make_shared<av_packet_factory_default>() )
 {
     if( !_bsfc )
         CK_THROW(("Unable to initialize h264_mp4toannexb bitstream filter."));
@@ -26,12 +27,12 @@ h264mp4_to_annexb::~h264mp4_to_annexb() throw()
     av_bitstream_filter_close( _bsfc );
 }
 
-void h264mp4_to_annexb::transform( uint8_t* src, size_t srcSize, bool keyFrame )
+void h264mp4_to_annexb::transform( shared_ptr<av_packet> input, bool keyFrame )
 {
     AVPacket inputPacket;
     av_init_packet( &inputPacket );
-    inputPacket.data = src;
-    inputPacket.size = srcSize;
+    inputPacket.data = input->map();
+    inputPacket.size = input->get_data_size();
 
     _free_filtered_packet();
 
@@ -61,27 +62,13 @@ void h264mp4_to_annexb::transform( uint8_t* src, size_t srcSize, bool keyFrame )
     }
 }
 
-void h264mp4_to_annexb::transform( std::shared_ptr<ck_memory> src, bool keyFrame )
+shared_ptr<av_packet> h264mp4_to_annexb::get()
 {
-    transform( src->map().get_ptr(), src->size_data(), keyFrame );
-}
+    shared_ptr<av_packet> output = _pf->get( _filteredPacket.size );
+    memcpy( output->map(), _filteredPacket.data, _filteredPacket.size );
+    output->set_data_size( _filteredPacket.size );
 
-size_t h264mp4_to_annexb::get_annexb_size() const
-{
-    return _filteredPacket.size;
-}
-
-void h264mp4_to_annexb::get_annexb( uint8_t* dest ) const
-{
-    memcpy( dest, _filteredPacket.data, _filteredPacket.size );
-}
-
-std::shared_ptr<ck_memory> h264mp4_to_annexb::get_annexb() const
-{
-    std::shared_ptr<ck_memory> buffer = make_shared<ck_memory>();
-    uint8_t* dest = buffer->extend_data( _filteredPacket.size ).get_ptr();
-    get_annexb( dest );
-    return buffer;
+    return std::move( output );
 }
 
 void h264mp4_to_annexb::_free_filtered_packet()
