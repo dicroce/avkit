@@ -116,13 +116,13 @@ shared_ptr<av_packet> jpeg_encoder::get()
     return std::move( _output );
 }
 
-void jpeg_encoder::write_jpeg_file( const cppkit::ck_string& fileName, shared_ptr<cppkit::ck_memory> jpeg )
+void jpeg_encoder::write_jpeg_file( const cppkit::ck_string& fileName, shared_ptr<av_packet> jpeg )
 {
     FILE* outFile = fopen( fileName.c_str(), "wb" );
     if( !outFile )
         CK_THROW(("Unable to open output file."));
 
-    fwrite( jpeg->map().get_ptr(), 1, jpeg->size_data(), outFile );
+    fwrite( jpeg->map(), 1, jpeg->get_data_size(), outFile );
 
     fclose( outFile );
 }

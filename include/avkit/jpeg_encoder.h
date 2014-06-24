@@ -30,7 +30,7 @@ public:
 
     CK_API std::shared_ptr<av_packet> get();
 
-    CK_API static void write_jpeg_file( const cppkit::ck_string& fileName, std::shared_ptr<cppkit::ck_memory> jpeg );
+    CK_API static void write_jpeg_file( const cppkit::ck_string& fileName, std::shared_ptr<av_packet> jpeg );
 
 private:
     jpeg_encoder( const jpeg_encoder& obj );
