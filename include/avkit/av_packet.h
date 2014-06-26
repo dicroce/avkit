@@ -36,6 +36,9 @@ public:
     void set_ts_freq( uint32_t freq );
     uint32_t get_ts_freq() const;
 
+    void set_key( bool key );
+    bool is_key() const;
+
 private:
     void _clear() noexcept;
 
@@ -53,6 +56,8 @@ private:
     uint32_t _ts;
     // how many _ts ticks are in one second.
     uint32_t _ticksInSecond;
+    // whether this packet is a key frame
+    bool _key;
 };
 
 }
