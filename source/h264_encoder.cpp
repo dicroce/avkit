@@ -134,7 +134,7 @@ h264_encoder::~h264_encoder() throw()
     av_free( _context );
 }
 
-void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, h264_encoder_frame_type type )
+void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_type type )
 {
     AVFrame frame;
     avcodec_get_frame_defaults( &frame );
@@ -206,7 +206,7 @@ shared_ptr<av_packet> h264_encoder::get()
 
 #if 0
 size_t h264_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outputSize,
-                                     h264_encoder_frame_type type )
+                                     encoder_frame_type type )
 {
     AVFrame frame;
     avcodec_get_frame_defaults( &frame );
@@ -268,7 +268,7 @@ size_t h264_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outpu
 }
 
 shared_ptr<ck_memory> h264_encoder::encode_yuv420p( shared_ptr<ck_memory> pic,
-                                                    h264_encoder_frame_type type )
+                                                    encoder_frame_type type )
 {
     shared_ptr<ck_memory> frame = make_shared<ck_memory>( DEFAULT_ENCODE_BUFFER_SIZE + DEFAULT_PADDING );
 

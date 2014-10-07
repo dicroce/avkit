@@ -5,6 +5,7 @@
 #include "avkit/options.h"
 #include "avkit/av_packet.h"
 #include "avkit/av_packet_factory.h"
+#include "avkit/frame_types.h"
 #include "cppkit/ck_memory.h"
 
 extern "C"
@@ -21,13 +22,6 @@ class h264_encoder
 {
 public:
 
-    CK_API enum h264_encoder_frame_type
-    {
-        FRAME_TYPE_KEY,
-        FRAME_TYPE_PARTIAL,
-        FRAME_TYPE_AUTO_GOP
-    };
-
     CK_API h264_encoder( const struct codec_options& options,
                          bool annexB = true,
                          int encodeAttempts = H264_ENCODE_ATTEMPTS );
@@ -37,7 +31,7 @@ public:
     CK_API void set_packet_factory( std::shared_ptr<av_packet_factory> pf ) { _pf = pf; }
 
     CK_API void encode_yuv420p( std::shared_ptr<av_packet> input,
-                                h264_encoder_frame_type type = FRAME_TYPE_AUTO_GOP );
+                                encoder_frame_type type = FRAME_TYPE_AUTO_GOP );
 
     CK_API std::shared_ptr<av_packet> get();
 

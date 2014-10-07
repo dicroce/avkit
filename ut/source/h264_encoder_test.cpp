@@ -5,6 +5,7 @@
 #include "avkit/jpeg_encoder.h"
 #include "avkit/locky.h"
 #include "avkit/options.h"
+#include "avkit/frame_types.h"
 
 extern "C"
 {
@@ -44,7 +45,7 @@ void h264_encoder_test::test_encode_key()
     shared_ptr<h264_encoder> e;
     UT_ASSERT_NO_THROW( e = make_shared<h264_encoder>( get_fast_h264_encoder_options( 500000, 1280, 720, 15, 1, 15 ) ) );
 
-    UT_ASSERT_NO_THROW( e->encode_yuv420p( _pic, h264_encoder::FRAME_TYPE_KEY ) );
+    UT_ASSERT_NO_THROW( e->encode_yuv420p( _pic, FRAME_TYPE_KEY ) );
 
     shared_ptr<av_packet> output;
     UT_ASSERT_NO_THROW( output = e->get() );

@@ -12,4 +12,6 @@ set(SOURCES source/framework.cpp
 
 set(COMMON_LIBS cppkit avkit)
 
+include_directories(/usr/include/ffmpeg)
+
 include(../../devel_artifacts/build/base_ut.cmake)

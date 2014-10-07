@@ -7,6 +7,7 @@
 #include "avkit/h264_encoder.h"
 #include "avkit/av_muxer.h"
 #include "avkit/options.h"
+#include "avkit/frame_types.h"
 
 namespace avkit
 {
@@ -54,10 +55,18 @@ public:
         return true;
     }
 
-    CK_API void encode_yuv420p_and_mux( h264_encoder& encoder,
+    template<class T>
+    CK_API void encode_yuv420p_and_mux( T& encoder,
                                         av_muxer& muxer,
                                         std::shared_ptr<av_packet> pic,
-                                        h264_encoder::h264_encoder_frame_type type = h264_encoder::FRAME_TYPE_AUTO_GOP );
+                                        encoder_frame_type type = FRAME_TYPE_AUTO_GOP )
+    {
+        encoder.encode_yuv420p( pic, type );
+
+        std::shared_ptr<av_packet> encodeBuffer = encoder.get();
+
+        muxer.write_video_packet( encodeBuffer, encoder.last_was_key() );
+    }
 
     CK_API static int64_t compute_num_output_frames( int64_t numInputFrames,
                                                      int inputTimeBaseNum, int inputTimeBaseDen,
