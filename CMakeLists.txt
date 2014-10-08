@@ -19,6 +19,7 @@ set(SOURCES source/argb24_to_yuv420p.cpp
 set(COMMON_LIBS cppkit avcodec avformat avutil swscale x264)
 
 if(CMAKE_SYSTEM MATCHES "Linux-")
+    include_directories(/usr/include/ffmpeg)
     add_definitions(-D__STDC_CONSTANT_MACROS)
     include_directories(/usr/include/ffmpeg)
 endif(CMAKE_SYSTEM MATCHES "Linux-")
