@@ -20,6 +20,7 @@ set(COMMON_LIBS cppkit avcodec avformat avutil swscale x264)
 
 if(CMAKE_SYSTEM MATCHES "Linux-")
     add_definitions(-D__STDC_CONSTANT_MACROS)
+    include_directories(/usr/include/ffmpeg)
 endif(CMAKE_SYSTEM MATCHES "Linux-")
 
 include(../devel_artifacts/build/base_lib.cmake NO_POLICY_SCOPE)
