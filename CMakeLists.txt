@@ -25,4 +25,4 @@ if(CMAKE_SYSTEM MATCHES "Linux-")
 endif(CMAKE_SYSTEM MATCHES "Linux-")
 
 include(common.cmake NO_POLICY_SCOPE)
-include(../devel_artifacts/build/base_lib.cmake NO_POLICY_SCOPE)
+include("${devel_artifacts_path}/build/base_lib.cmake" NO_POLICY_SCOPE)
