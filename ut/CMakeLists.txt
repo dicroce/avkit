@@ -14,4 +14,5 @@ set(COMMON_LIBS cppkit avkit)
 
 include_directories(/usr/include/ffmpeg)
 
+include(common.cmake NO_POLICY_SCOPE)
 include(../../devel_artifacts/build/base_ut.cmake)
