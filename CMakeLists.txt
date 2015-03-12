@@ -16,7 +16,7 @@ set(SOURCES source/argb24_to_yuv420p.cpp
             source/av_packet.cpp
             source/av_packet_factory.cpp)
 
-set(COMMON_LIBS cppkit avcodec avformat avutil swscale x264)
+set(COMMON_LIBS cppkit avcodec avformat swscale avfilter avutil)
 
 if(CMAKE_SYSTEM MATCHES "Linux-")
     include_directories(/usr/include/ffmpeg)

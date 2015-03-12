@@ -62,7 +62,7 @@ void yuv420p_to_argb24::transform( shared_ptr<av_packet> input, size_t width, si
             pixelWriter++;
             *pixelWriter = (uint8_t)(CLIP(GETB( *readerY, *readerU, *readerV ),0,255));
 
-            uint32_t word = ntohl( pixel );
+            uint32_t word = x_ntohl( pixel );
             *((uint32_t*)writer) = word;
         }
     }
