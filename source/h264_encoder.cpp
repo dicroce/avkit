@@ -16,6 +16,10 @@ static const size_t DEFAULT_PADDING = 16;
 static const size_t DEFAULT_ENCODE_BUFFER_SIZE = (1024*1024);
 static const size_t DEFAULT_EXTRADATA_BUFFER_SIZE = (1024*256);
 
+#ifdef IS_WINDOWS
+#pragma warning(disable:4996)
+#endif
+
 h264_encoder::h264_encoder( const struct codec_options& options,
                             bool annexB,
                             int encodeAttempts ) :
@@ -180,7 +184,7 @@ void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_ty
 
         av_init_packet( &pkt );
         pkt.data = dest;
-        pkt.size = (_annexB) ? _output->get_buffer_size() - _context->extradata_size : _output->get_buffer_size();
+        pkt.size = (_annexB) ? (int)(_output->get_buffer_size() - _context->extradata_size) : (int)_output->get_buffer_size();
 
         if( avcodec_encode_video2( _context,
                                    &pkt,

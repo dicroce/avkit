@@ -218,7 +218,7 @@ shared_ptr<ck_memory> av_demuxer::load_file( const cppkit::ck_string& fileName )
 
     uint8_t* d = buffer->extend_data( fileInfo.file_size ).get_ptr();
 
-    int itemsRead = fread( d, 1, fileInfo.file_size, inFile );
+    int itemsRead = (int)fread( d, 1, fileInfo.file_size, inFile );
 
     fclose( inFile );
 
@@ -271,7 +271,7 @@ struct stream_statistics av_demuxer::get_video_stream_statistics( const cppkit::
         }
 
         shared_ptr<av_packet> pkt = dm.get();
-        avgFrameSize.add_sample( pkt->get_data_size() );
+        avgFrameSize.add_sample( (uint32_t)pkt->get_data_size() );
 
         currentIndex++;
     }
@@ -295,7 +295,7 @@ void av_demuxer::_open_streams()
 
     if( avformat_find_stream_info( _context, NULL ) >= 0 )
     {
-        for( int i = 0; i < _context->nb_streams; i++ )
+        for( int i = 0; i < (int)_context->nb_streams; i++ )
         {
             if( _context->streams[i]->codec->codec_type == AVMEDIA_TYPE_UNKNOWN )
             {
@@ -351,7 +351,7 @@ void av_demuxer::_open_custom_io_context( const uint8_t* buffer, size_t bufferSi
 {
     memcpy( _storage->extend_data( bufferSize ).get_ptr(), buffer, bufferSize );
 
-    _memoryIOContext = avio_alloc_context( (uint8_t*)av_malloc( bufferSize ), bufferSize, 0, this, _read, NULL, _seek );
+    _memoryIOContext = avio_alloc_context( (uint8_t*)av_malloc( bufferSize ), (int)bufferSize, 0, this, _read, NULL, _seek );
     if( !_memoryIOContext )
         CK_THROW(("Unable to allocate IO context."));
 
@@ -366,8 +366,8 @@ int av_demuxer::_read( void* opaque, uint8_t* dest, int size )
 {
     av_demuxer* obj = (av_demuxer*)opaque;
 
-    if( (obj->_pos + size) > obj->_storage->size_data() )
-        size = obj->_storage->size_data() - obj->_pos;
+    if( (obj->_pos + size) > (int)obj->_storage->size_data() )
+        size = (int)(obj->_storage->size_data() - obj->_pos);
 
     memcpy( dest, obj->_storage->map().get_ptr() + obj->_pos, size );
     obj->_pos += size;
@@ -448,7 +448,7 @@ void av_demuxer::_optional_annexb_filter()
                 CK_THROW(("Unable to allocate filter packet."));
             memcpy( data, _filterPkt.data, filteredSize );
             _filterPkt.data = data;
-            _filterPkt.size = filteredSize;
+            _filterPkt.size = (int)filteredSize;
         }
     }
 }

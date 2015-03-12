@@ -84,7 +84,7 @@ void av_muxer::set_extra_data( std::shared_ptr<cppkit::ck_memory> extraData )
         _stream->codec->extradata = (uint8_t*)av_mallocz( extraData->size_data() );
         if( !_stream->codec->extradata )
             CK_THROW(("Unable to allocate extradata storage."));
-        _stream->codec->extradata_size = extraData->size_data();
+        _stream->codec->extradata_size = (int)extraData->size_data();
 
         memcpy( _stream->codec->extradata, extraData->map().get_ptr(), extraData->size_data() );
     }
@@ -124,7 +124,7 @@ void av_muxer::write_video_packet( shared_ptr<av_packet> input, bool keyFrame )
 
     pkt.stream_index = _stream->index;
     pkt.data = input->map();
-    pkt.size = input->get_data_size();
+    pkt.size = (int)input->get_data_size();
 
     pkt.pts = _ts;
     pkt.dts = _ts;

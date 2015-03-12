@@ -5,7 +5,7 @@
 namespace avkit
 {
 
-CK_API enum encoder_frame_type
+enum encoder_frame_type
 {
     FRAME_TYPE_KEY,
     FRAME_TYPE_PARTIAL,

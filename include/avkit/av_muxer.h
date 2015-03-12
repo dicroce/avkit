@@ -20,7 +20,7 @@ class av_muxer
 {
 public:
 
-    CK_API enum OUTPUT_LOCATION
+    enum OUTPUT_LOCATION
     {
         OUTPUT_LOCATION_FILE,
         OUTPUT_LOCATION_BUFFER

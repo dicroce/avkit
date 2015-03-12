@@ -14,6 +14,10 @@ using namespace std;
 
 static const size_t DEFAULT_PADDING = 16;
 
+#ifdef IS_WINDOWS
+#pragma warning(disable:4996)
+#endif
+
 h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttempts ) :
     _codec( avcodec_find_decoder( CODEC_ID_H264 ) ),
     _context( avcodec_alloc_context3( _codec ) ),
@@ -40,7 +44,7 @@ h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttem
     if( !_options.thread_count.is_null() )
     {
         _context->thread_count = _options.thread_count.value();
-        _context->thread_type == FF_THREAD_FRAME;
+        _context->thread_type = FF_THREAD_FRAME;
     }
 
     if( !_options.tune.is_null() )
@@ -76,7 +80,7 @@ h264_decoder::h264_decoder( av_demuxer& deMuxer, const struct codec_options& opt
     if( !_options.thread_count.is_null() )
     {
         _context->thread_count = _options.thread_count.value();
-        _context->thread_type == FF_THREAD_FRAME;
+        _context->thread_type = FF_THREAD_FRAME;
     }
 
     if( !_options.tune.is_null() )
@@ -106,7 +110,7 @@ void h264_decoder::decode( std::shared_ptr<av_packet> frame )
     AVPacket inputPacket;
     av_init_packet( &inputPacket );
     inputPacket.data = frame->map();
-    inputPacket.size = frame->get_data_size();
+    inputPacket.size = (int)frame->get_data_size();
 
     int gotPicture = 0;
     int ret = 0;
@@ -183,7 +187,7 @@ shared_ptr<av_packet> h264_decoder::get()
     if( _outputHeight == 0 )
         _outputHeight = _context->height;
 
-    size_t pictureSize = _outputWidth * _outputHeight * 1.5;
+    size_t pictureSize = (size_t)(_outputWidth * _outputHeight * 1.5);
     shared_ptr<av_packet> pkt = _pf->get( pictureSize );
     pkt->set_data_size( pictureSize );
 

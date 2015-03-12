@@ -20,7 +20,7 @@ argb24_to_yuv420p::~argb24_to_yuv420p() throw()
 
 void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size_t height )
 {
-    size_t pictureSize = width * height * 1.5;
+    size_t pictureSize = (size_t)(width * height * 1.5);
     _yuv420 = _pf->get( pictureSize );
     _yuv420->set_data_size( pictureSize );
 

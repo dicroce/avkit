@@ -29,19 +29,19 @@ void aspect_correct_dimensions( uint16_t streamWidth, uint16_t streamHeight,
 
         if(requestedHeight !=0 && requestedWidth != 0)
         {
-            float streamAspectRatio = streamWidth * 1.0 / streamHeight;
-            float maxAspectRatio = requestedWidth * 1.0 / requestedHeight;
+            float streamAspectRatio = streamWidth * 1.0f / streamHeight;
+            float maxAspectRatio = requestedWidth * 1.0f / requestedHeight;
             float scaleFactor;
 
             if(maxAspectRatio < streamAspectRatio)
-                scaleFactor = requestedWidth * 1.0 / streamWidth;
+                scaleFactor = requestedWidth * 1.0f / streamWidth;
             else
-                scaleFactor = requestedHeight * 1.0 / streamHeight;
+                scaleFactor = requestedHeight * 1.0f / streamHeight;
 
             scaleFactor = min(scaleFactor, 1.0f);
 
-            uint16_t scaledRoundedPixelWidth = streamWidth * scaleFactor + 0.5;
-            uint16_t scaledRoundedPixelHeight = streamHeight * scaleFactor + 0.5;
+            uint16_t scaledRoundedPixelWidth = (uint16_t)(streamWidth * scaleFactor + 0.5);
+            uint16_t scaledRoundedPixelHeight = (uint16_t)(streamHeight * scaleFactor + 0.5);
 
             uint16_t multipleOfEightWidth = max( scaledRoundedPixelWidth / 2, 1) * 2;
             uint16_t multipleOfEightHeight = max( scaledRoundedPixelHeight / 2, 1) * 2;

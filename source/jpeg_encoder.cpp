@@ -9,6 +9,10 @@ using namespace std;
 
 static const size_t DEFAULT_JPEG_ENCODE_BUFFER_SIZE = (1024*1024);
 
+#ifdef IS_WINDOWS
+#pragma warning(disable:4996)
+#endif
+
 jpeg_encoder::jpeg_encoder( const struct codec_options& options, int encodeAttempts ) :
     _codec( avcodec_find_encoder( CODEC_ID_MJPEG ) ),
     _context( avcodec_alloc_context3( _codec ) ),
@@ -96,7 +100,7 @@ void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
     {
         av_init_packet( &pkt );
         pkt.data = _output->map();
-        pkt.size = _output->get_buffer_size();
+        pkt.size = (int)_output->get_buffer_size();
 
         if( avcodec_encode_video2( _context,
                                    &pkt,

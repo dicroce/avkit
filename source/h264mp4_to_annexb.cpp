@@ -32,7 +32,7 @@ void h264mp4_to_annexb::transform( shared_ptr<av_packet> input, bool keyFrame )
     AVPacket inputPacket;
     av_init_packet( &inputPacket );
     inputPacket.data = input->map();
-    inputPacket.size = input->get_data_size();
+    inputPacket.size = (int)input->get_data_size();
 
     _free_filtered_packet();
 
@@ -58,7 +58,7 @@ void h264mp4_to_annexb::transform( shared_ptr<av_packet> input, bool keyFrame )
             CK_THROW(("Unable to allocate filter packet."));
         memcpy( data, _filteredPacket.data, filteredSize );
         _filteredPacket.data = data;
-        _filteredPacket.size = filteredSize;
+        _filteredPacket.size = (int)filteredSize;
     }
 }
 
