@@ -198,6 +198,9 @@ shared_ptr<av_packet> av_demuxer::get() const
         memcpy( pkt->map(), _deMuxPkt.data, _deMuxPkt.size );
     }
 
+    pkt->set_pts( _deMuxPkt.pts );
+    pkt->set_dts( _deMuxPkt.dts );
+
     if( is_key() )
         pkt->set_key( true );
 

@@ -25,7 +25,8 @@ void av_packet_test::test_size_ctor_owning()
         UT_ASSERT( pkt->_owning == true );
         UT_ASSERT( pkt->_buffer != NULL );
         UT_ASSERT( pkt->_dataSize == 0 );
-        UT_ASSERT( pkt->_ts == 0 );
+        UT_ASSERT( pkt->_pts == 0 );
+        UT_ASSERT( pkt->_dts == 0 );
         UT_ASSERT( pkt->_ticksInSecond == 90000 );
 
         pkt->set_data_size( 16384 );
@@ -51,7 +52,8 @@ void av_packet_test::test_size_ctor_owning()
         UT_ASSERT( pkt->_owning == true );
         UT_ASSERT( pkt->_buffer != NULL );
         UT_ASSERT( pkt->_dataSize == 0 );
-        UT_ASSERT( pkt->_ts == 0 );
+        UT_ASSERT( pkt->_pts == 0 );
+        UT_ASSERT( pkt->_dts == 0 );
         UT_ASSERT( pkt->_ticksInSecond == 90000 );
     }
 }
@@ -100,7 +102,8 @@ void av_packet_test::test_copy_ctor_owning()
     UT_ASSERT( pktB._owning == pktA._owning );
     UT_ASSERT( pktB._buffer != pktA._buffer );
     UT_ASSERT( pktB._dataSize == pktA._dataSize );
-    UT_ASSERT( pktB._ts == pktA._ts );
+    UT_ASSERT( pktB._pts == pktA._pts );
+    UT_ASSERT( pktB._dts == pktA._dts );
     UT_ASSERT( pktB._ticksInSecond == pktA._ticksInSecond );
 
     for( size_t i = 0; i < 16384; i++ )
@@ -121,7 +124,8 @@ void av_packet_test::test_copy_ctor_non_owning()
     UT_ASSERT( pktB._owning == pktA._owning );
     UT_ASSERT( pktB._buffer == pktA._buffer );
     UT_ASSERT( pktB._dataSize == pktA._dataSize );
-    UT_ASSERT( pktB._ts == pktA._ts );
+    UT_ASSERT( pktB._pts == pktA._pts );
+    UT_ASSERT( pktB._dts == pktA._dts );
     UT_ASSERT( pktB._ticksInSecond == pktA._ticksInSecond );
 
     UT_ASSERT( pktA._buffer == &foreignBuffer[0] );
@@ -157,7 +161,8 @@ void av_packet_test::test_copy_assignment()
     UT_ASSERT( pktB._owning == pktA._owning );
     UT_ASSERT( pktB._buffer != pktA._buffer );
     UT_ASSERT( pktB._dataSize == pktA._dataSize );
-    UT_ASSERT( pktB._ts == pktA._ts );
+    UT_ASSERT( pktB._pts == pktA._pts );
+    UT_ASSERT( pktB._dts == pktA._dts );
     UT_ASSERT( pktB._ticksInSecond == pktA._ticksInSecond );
 
     for( size_t i = 0; i < 16384; i++ )

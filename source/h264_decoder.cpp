@@ -190,6 +190,8 @@ shared_ptr<av_packet> h264_decoder::get()
     size_t pictureSize = (size_t)(_outputWidth * _outputHeight * 1.5);
     shared_ptr<av_packet> pkt = _pf->get( pictureSize );
     pkt->set_data_size( pictureSize );
+    pkt->set_width( _outputWidth );
+    pkt->set_height( _outputHeight );
 
     if( _scaler == NULL )
     {

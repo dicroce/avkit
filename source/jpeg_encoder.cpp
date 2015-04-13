@@ -112,6 +112,9 @@ void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
 
     } while( gotPacket == 0 && (attempt < _encodeAttempts) );
 
+    _output->set_width( _context->width );
+    _output->set_height( _context->height );
+
     _output->set_data_size( pkt.size );
 }
 

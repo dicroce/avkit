@@ -40,6 +40,8 @@ private:
     AVCodecContext* _codec;
     AVPacket _filteredPacket;
     std::shared_ptr<av_packet_factory> _pf;
+    uint16_t _inputWidth;
+    uint16_t _inputHeight;
 };
 
 }

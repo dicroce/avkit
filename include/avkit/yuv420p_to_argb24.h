@@ -5,7 +5,12 @@
 #include "avkit/av_packet.h"
 #include "avkit/av_packet_factory.h"
 #include "cppkit/ck_types.h"
-#include "cppkit/ck_memory.h"
+
+extern "C"
+{
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+}
 
 namespace avkit
 {
@@ -27,8 +32,15 @@ private:
     yuv420p_to_argb24( const yuv420p_to_argb24& obj );
     yuv420p_to_argb24& operator = ( const yuv420p_to_argb24& );
 
+    void _init_scaler( uint16_t width, uint16_t height );
+    void _destroy_scaler();
+
     std::shared_ptr<av_packet> _rgb24;
     std::shared_ptr<av_packet_factory> _pf;
+
+    SwsContext* _scaler;
+    uint16_t _currentWidth;
+    uint16_t _currentHeight;
 };
 
 }

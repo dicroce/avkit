@@ -38,6 +38,8 @@ struct codec_options
 
 struct codec_options get_fast_h264_decoder_options();
 
+struct codec_options get_normal_h264_decoder_options();
+
 struct codec_options get_fast_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
 
 struct codec_options get_hls_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );

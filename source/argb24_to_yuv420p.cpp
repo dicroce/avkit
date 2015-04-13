@@ -24,6 +24,9 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
     _yuv420 = _pf->get( pictureSize );
     _yuv420->set_data_size( pictureSize );
 
+    _yuv420->set_width( pkt->get_width() );
+    _yuv420->set_height( pkt->get_height() );
+
     uint8_t* yuv = _yuv420->map();
     uint8_t* src = pkt->map();
 

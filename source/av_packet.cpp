@@ -17,9 +17,12 @@ av_packet::av_packet( size_t sz ) :
     _owning( true ),
     _buffer( NULL ),
     _dataSize( 0 ),
-    _ts( 0 ),
+    _pts( 0 ),
+    _dts( 0 ),
     _ticksInSecond( 90000 ),
-    _key( false )
+    _key( false ),
+    _width( 0 ),
+    _height( 0 )
 {
     _buffer = (uint8_t*)av_malloc( _bufferSize );
     if( !_buffer )
@@ -32,9 +35,12 @@ av_packet::av_packet( uint8_t* src, size_t sz, bool owning ) :
     _owning( owning ),
     _buffer( src ),
     _dataSize( sz ),
-    _ts( 0 ),
+    _pts( 0 ),
+    _dts( 0 ),
     _ticksInSecond( 90000 ),
-    _key( false )
+    _key( false ),
+    _width( 0 ),
+    _height( 0 )
 {
     if( _owning )
     {
@@ -55,9 +61,12 @@ av_packet::av_packet( const av_packet& obj ) :
     _owning( false ),
     _buffer( NULL ),
     _dataSize( 0 ),
-    _ts( 0 ),
+    _pts( 0 ),
+    _dts( 0 ),
     _ticksInSecond( 90000 ),
-    _key( obj._key )
+    _key( false ),
+    _width( 0 ),
+    _height( 0 )
 {
     _clear();
 
@@ -79,8 +88,12 @@ av_packet::av_packet( const av_packet& obj ) :
         _buffer = obj._buffer;
     }
 
-    _ts = obj._ts;
+    _pts = obj._pts;
+    _dts = obj._dts;
     _ticksInSecond = obj._ticksInSecond;
+    _key = obj._key;
+    _width = obj._width;
+    _height = obj._height;
 }
 
 av_packet::av_packet( av_packet&& obj ) noexcept :
@@ -89,9 +102,12 @@ av_packet::av_packet( av_packet&& obj ) noexcept :
     _owning( std::move( obj._owning ) ),
     _buffer( std::move( obj._buffer ) ),
     _dataSize( std::move( obj._dataSize ) ),
-    _ts( std::move( obj._ts ) ),
+    _pts( std::move( obj._pts ) ),
+    _dts( std::move( obj._dts ) ),
     _ticksInSecond( std::move( obj._ticksInSecond ) ),
-    _key( std::move( obj._key ) )
+    _key( std::move( obj._key ) ),
+    _width( std::move( obj._width ) ),
+    _height( std::move( obj._height ) )
 {
     obj._buffer = NULL;
     obj._bufferSize = 0;
@@ -124,9 +140,12 @@ av_packet& av_packet::operator = ( const av_packet& obj )
         _buffer = obj._buffer;
     }
 
-    _ts = obj._ts;
+    _pts = obj._pts;
+    _dts = obj._dts;
     _ticksInSecond = obj._ticksInSecond;
     _key = obj._key;
+    _width = obj._width;
+    _height = obj._height;
 
     return *this;
 }
@@ -138,9 +157,12 @@ av_packet& av_packet::operator = ( av_packet&& obj ) noexcept
     _owning = std::move( obj._owning );
     _buffer = std::move( obj._buffer );
     _dataSize = std::move( obj._dataSize );
-    _ts = std::move( obj._ts );
+    _pts = std::move( obj._pts );
+    _dts = std::move( obj._dts );
     _ticksInSecond = std::move( obj._ticksInSecond );
     _key = std::move( obj._key );
+    _width = std::move( obj._width );
+    _height = std::move( obj._height );
 
     obj._buffer = NULL;
     obj._bufferSize = 0;
@@ -171,14 +193,24 @@ size_t av_packet::get_data_size() const
     return _dataSize;
 }
 
-void av_packet::set_ts( uint32_t ts )
+void av_packet::set_pts( int64_t pts )
 {
-    _ts = ts;
+    _pts = pts;
 }
 
-uint32_t av_packet::get_ts() const
+int64_t av_packet::get_pts() const
 {
-    return _ts;
+    return _pts;
+}
+
+void av_packet::set_dts( int64_t dts )
+{
+    _dts = dts;
+}
+
+int64_t av_packet::get_dts() const
+{
+    return _dts;
 }
 
 void av_packet::set_ts_freq( uint32_t freq )
@@ -201,6 +233,26 @@ bool av_packet::is_key() const
     return _key;
 }
 
+void av_packet::set_width( uint16_t width )
+{
+    _width = width;
+}
+
+uint16_t av_packet::get_width() const
+{
+    return _width;
+}
+
+void av_packet::set_height( uint16_t height )
+{
+    _height = height;
+}
+
+uint16_t av_packet::get_height() const
+{
+    return _height;
+}
+
 void av_packet::_clear() noexcept
 {
     if( _owning && _buffer )
@@ -210,6 +262,9 @@ void av_packet::_clear() noexcept
     _bufferSize = 0;
     _requestedSize = 0;
     _dataSize = 0;
-    _ts = 0;
+    _pts = 0;
+    _dts = 0;
     _ticksInSecond = 90000;
+    _width = 0;
+    _height = 0;
 }

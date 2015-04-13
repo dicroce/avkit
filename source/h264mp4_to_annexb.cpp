@@ -11,7 +11,9 @@ h264mp4_to_annexb::h264mp4_to_annexb( av_demuxer& deMuxer ) :
     _bsfc( av_bitstream_filter_init( "h264_mp4toannexb" ) ),
     _codec( deMuxer._context->streams[deMuxer._videoStreamIndex]->codec ),
     _filteredPacket(),
-    _pf( std::make_shared<av_packet_factory_default>() )
+    _pf( std::make_shared<av_packet_factory_default>() ),
+    _inputWidth( 0 ),
+    _inputHeight( 0 )
 {
     if( !_bsfc )
         CK_THROW(("Unable to initialize h264_mp4toannexb bitstream filter."));
@@ -33,6 +35,9 @@ void h264mp4_to_annexb::transform( shared_ptr<av_packet> input, bool keyFrame )
     av_init_packet( &inputPacket );
     inputPacket.data = input->map();
     inputPacket.size = (int)input->get_data_size();
+
+    _inputWidth = input->get_width();
+    _inputHeight = input->get_height();
 
     _free_filtered_packet();
 
@@ -67,6 +72,8 @@ shared_ptr<av_packet> h264mp4_to_annexb::get()
     shared_ptr<av_packet> output = _pf->get( _filteredPacket.size );
     memcpy( output->map(), _filteredPacket.data, _filteredPacket.size );
     output->set_data_size( _filteredPacket.size );
+    output->set_width( _inputWidth );
+    output->set_height( _inputHeight );
 
     return std::move( output );
 }

@@ -197,8 +197,18 @@ void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_ty
     } while( gotPacket == 0 && (attempts < _encodeAttempts) );
 
     if( pkt.flags & AV_PKT_FLAG_KEY )
+    {
+        _output->set_key( true );
         _lastWasKey = true;
-    else _lastWasKey = false;
+    }
+    else
+    {
+        _output->set_key( false );
+        _lastWasKey = false;
+    }
+
+    _output->set_width( _context->width );
+    _output->set_height( _context->height );
 
     _output->set_data_size( (_annexB) ? pkt.size + _context->extradata_size : pkt.size );
 }
@@ -207,86 +217,6 @@ shared_ptr<av_packet> h264_encoder::get()
 {
     return std::move( _output );
 }
-
-#if 0
-size_t h264_encoder::encode_yuv420p( uint8_t* pic, uint8_t* output, size_t outputSize,
-                                     encoder_frame_type type )
-{
-    AVFrame frame;
-    avcodec_get_frame_defaults( &frame );
-
-    frame.data[0] = pic;
-    pic += (_context->width * _context->height);
-    frame.data[1] = pic;
-    pic += ((_context->width/4) * _context->height);
-    frame.data[2] = pic;
-
-    frame.linesize[0] = _context->width;
-    frame.linesize[1] = (_context->width/2);
-    frame.linesize[2] = (_context->width/2);
-
-    frame.format = _context->pix_fmt;
-    frame.width = _context->width;
-    frame.height = _context->height;
-
-    if( type != FRAME_TYPE_AUTO_GOP )
-    {
-        if( type == FRAME_TYPE_KEY )
-            frame.pict_type = AV_PICTURE_TYPE_I;
-        else frame.pict_type = AV_PICTURE_TYPE_P;
-    }
-
-    int attempts = 0;
-    int gotPacket = 0;
-    AVPacket pkt;
-
-    do
-    {
-        uint8_t* dest = output;
-
-        if( _annexB )
-        {
-            memcpy( dest, _context->extradata, _context->extradata_size );
-            dest += _context->extradata_size;
-        }
-
-        av_init_packet( &pkt );
-        pkt.data = dest;
-        pkt.size = (_annexB) ? outputSize - _context->extradata_size : outputSize;
-
-        if( avcodec_encode_video2( _context,
-                                   &pkt,
-                                   &frame,
-                                   &gotPacket ) < 0 )
-            CK_THROW(("Error while encoding."));
-
-        attempts++;
-
-    } while( gotPacket == 0 && (attempts < _encodeAttempts) );
-
-    if( pkt.flags & AV_PKT_FLAG_KEY )
-        _lastWasKey = true;
-    else _lastWasKey = false;
-
-    return (_annexB) ? pkt.size + _context->extradata_size : pkt.size;
-}
-
-shared_ptr<ck_memory> h264_encoder::encode_yuv420p( shared_ptr<ck_memory> pic,
-                                                    encoder_frame_type type )
-{
-    shared_ptr<ck_memory> frame = make_shared<ck_memory>( DEFAULT_ENCODE_BUFFER_SIZE + DEFAULT_PADDING );
-
-    uint8_t* p = frame->extend_data( DEFAULT_ENCODE_BUFFER_SIZE ).get_ptr();
-
-    size_t outputSize = encode_yuv420p( pic->map().get_ptr(),
-                                        p,
-                                        frame->size_data(),
-                                       type );
-    frame->set_data_size( outputSize );
-
-    return frame;
-}
-#endif
 
 struct codec_options h264_encoder::get_options() const
 {
