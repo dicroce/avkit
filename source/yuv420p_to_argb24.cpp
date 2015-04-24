@@ -9,12 +9,6 @@ using namespace avkit;
 using namespace cppkit;
 using namespace std;
 
-#define GETR(y,u,v) ((1.164 * (y - 16)) + (1.596 * ((v) - 128)))
-#define GETG(y,u,v) ((1.164 * (y - 16)) - (0.813 * ((v) - 128)) - (0.391 * ((u) - 128)))
-#define GETB(y,u,v) ((1.164 * (y - 16)) + (2.018 * ((u) - 128)))
-
-#define CLIP(val,min,max) (val<min)?min:(val>max)?max:val
-
 yuv420p_to_argb24::yuv420p_to_argb24() :
     _rgb24(),
     _pf( std::make_shared<av_packet_factory_default>() ),
@@ -68,61 +62,6 @@ void yuv420p_to_argb24::transform( shared_ptr<av_packet> input, size_t width, si
                          height,
                          pict.data,
                          pict.linesize );
-
-#if 0
-    const size_t halfWidth = width / 2;
-    const size_t halfHeight = height / 2;
-
-    const uint8_t* srcY = input->map();
-    const uint8_t* srcU = srcY + (width*height);
-    const uint8_t* srcV = srcU + (halfWidth*halfHeight);
-
-    for( size_t dstY = 0, uvY = 0; dstY < height; dstY+=2, uvY++ )
-    {
-        for( size_t dstX = 0, uvX = 0; dstX < width; dstX+=2, uvX++ )
-        {
-            uint8_t y = *srcY++;
-            uint8_t u = *(srcU + (( uvY * halfWidth ) + uvX ));
-            uint8_t v = *(srcV + (( uvY * halfWidth ) + uvX ));
-
-            *dst++ = (uint8_t)(CLIP(GETB( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETG( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETR( y, u, v ),0,255));
-            *dst++ = 0xFF;
-
-            y = *srcY++;
-            u = *(srcU + (( uvY * halfWidth ) + uvX ));
-            v = *(srcV + (( uvY * halfWidth ) + uvX ));
-
-            *dst++ = (uint8_t)(CLIP(GETB( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETG( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETR( y, u, v ),0,255));
-            *dst++ = 0xFF;
-        }
-
-        for( size_t dstX = 0, uvX = 0; dstX < width; dstX+=2, uvX++ )
-        {
-            uint8_t y = *srcY++;
-            uint8_t u = *(srcU + (( uvY * halfWidth ) + uvX ));
-            uint8_t v = *(srcV + (( uvY * halfWidth ) + uvX ));
-
-            *dst++ = (uint8_t)(CLIP(GETB( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETG( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETR( y, u, v ),0,255));
-            *dst++ = 0xFF;
-
-            y = *srcY++;
-            u = *(srcU + (( uvY * halfWidth ) + uvX ));
-            v = *(srcV + (( uvY * halfWidth ) + uvX ));
-
-            *dst++ = (uint8_t)(CLIP(GETB( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETG( y, u, v ),0,255));
-            *dst++ = (uint8_t)(CLIP(GETR( y, u, v ),0,255));
-            *dst++ = 0xFF;
-        }
-    }
-#endif
-
 }
 
 shared_ptr<av_packet> yuv420p_to_argb24::get()
