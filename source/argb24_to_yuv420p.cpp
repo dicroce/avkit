@@ -1,5 +1,6 @@
 
 #include "avkit/argb24_to_yuv420p.h"
+#include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
 #include "cppkit/ck_socket.h"
@@ -12,6 +13,8 @@ argb24_to_yuv420p::argb24_to_yuv420p() :
     _yuv420(),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
 }
 
 argb24_to_yuv420p::~argb24_to_yuv420p() throw()

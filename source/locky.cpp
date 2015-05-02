@@ -1,18 +1,24 @@
 
 #include "avkit/locky.h"
 #include "cppkit/ck_logger.h"
+#include "cppkit/os/ck_platform.h"
 
 using namespace avkit;
 using namespace std;
 using namespace cppkit;
 
 list<shared_ptr<recursive_mutex> > locky::_locks;
+bool locky::_registered = false;
 
 void locky::register_ffmpeg()
 {
     av_register_all();
 
     av_lockmgr_register( locky::_locky_cb );
+
+    _registered = true;
+    
+    FULL_MEM_BARRIER();
 }
 
 void locky::unregister_ffmpeg()
@@ -20,6 +26,15 @@ void locky::unregister_ffmpeg()
     av_lockmgr_register( NULL );
 
     locky::_locks.clear();
+    
+    _registered = false;
+    
+    FULL_MEM_BARRIER();
+}
+
+bool locky::is_registered()
+{
+    return locky::_registered;
 }
 
 recursive_mutex* locky::_create_lock()

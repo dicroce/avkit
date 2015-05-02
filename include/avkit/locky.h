@@ -2,6 +2,8 @@
 #ifndef __avkit_locky_h
 #define __avkit_locky_h
 
+#include "cppkit/os/ck_exports.h"
+
 #include <mutex>
 #include <list>
 #include <memory>
@@ -18,8 +20,10 @@ namespace avkit
 class locky
 {
 public:
-    static void register_ffmpeg();
-    static void unregister_ffmpeg();
+    CK_API static void register_ffmpeg();
+    CK_API static void unregister_ffmpeg();
+    CK_API static bool is_registered();
+
 private:
     locky();
     locky( const locky& obj );
@@ -31,6 +35,7 @@ private:
     static int _locky_cb( void** mutex, enum AVLockOp op );
 
     static std::list<std::shared_ptr<std::recursive_mutex> > _locks;
+    static bool _registered;
 };
 
 }

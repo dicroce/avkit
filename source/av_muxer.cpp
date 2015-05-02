@@ -1,5 +1,6 @@
 
 #include "avkit/av_muxer.h"
+#include "avkit/locky.h"
 
 extern "C"
 {
@@ -25,6 +26,9 @@ av_muxer::av_muxer( const struct codec_options& options,
     _fileNum( 0 ),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     _context = avformat_alloc_context();
     if( !_context )
         CK_THROW(("Unable to allocate output format context."));

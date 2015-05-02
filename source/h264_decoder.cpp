@@ -1,5 +1,6 @@
 
 #include "avkit/h264_decoder.h"
+#include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
 
@@ -29,6 +30,9 @@ h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttem
     _decodeAttempts( decodeAttempts ),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     if( !_codec )
         CK_THROW(( "Failed to find H264 decoder." ));
 
@@ -65,6 +69,9 @@ h264_decoder::h264_decoder( av_demuxer& deMuxer, const struct codec_options& opt
     _decodeAttempts( decodeAttempts ),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     if( !_codec )
         CK_THROW(( "Failed to find H264 decoder." ));
 

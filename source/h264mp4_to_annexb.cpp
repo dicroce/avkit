@@ -1,5 +1,6 @@
 
 #include "avkit/h264mp4_to_annexb.h"
+#include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
 
@@ -15,6 +16,9 @@ h264mp4_to_annexb::h264mp4_to_annexb( av_demuxer& deMuxer ) :
     _inputWidth( 0 ),
     _inputHeight( 0 )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     if( !_bsfc )
         CK_THROW(("Unable to initialize h264_mp4toannexb bitstream filter."));
 

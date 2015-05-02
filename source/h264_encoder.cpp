@@ -1,5 +1,6 @@
 
 #include "avkit/h264_encoder.h"
+#include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
 
@@ -34,6 +35,9 @@ h264_encoder::h264_encoder( const struct codec_options& options,
     _pf( std::make_shared<av_packet_factory_default>() ),
     _output()
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     if( !_codec )
         CK_THROW(("Unable to locate H264 codec."));
 

@@ -1,5 +1,6 @@
 
 #include "avkit/av_demuxer.h"
+#include "avkit/locky.h"
 
 #include "cppkit/os/ck_large_files.h"
 #include "cppkit/ck_statistics.h"
@@ -31,6 +32,9 @@ av_demuxer::av_demuxer( const ck_string& fileName, bool annexBFilter ) :
     _bsfc( (annexBFilter) ? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
     _filterPkt.size = 0;

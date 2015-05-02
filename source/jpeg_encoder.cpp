@@ -1,6 +1,6 @@
 
 #include "avkit/jpeg_encoder.h"
-
+#include "avkit/locky.h"
 #include "cppkit/ck_exception.h"
 
 using namespace avkit;
@@ -21,6 +21,9 @@ jpeg_encoder::jpeg_encoder( const struct codec_options& options, int encodeAttem
     _output(),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
+    if( !locky::is_registered() )
+        CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
+
     if( !_codec )
         CK_THROW(("Unable to locate MJPEG codec."));
 

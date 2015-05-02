@@ -8,7 +8,6 @@ extern "C"
 }
 
 using namespace avkit;
-using namespace cppkit;
 using namespace std;
 
 namespace avkit
