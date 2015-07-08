@@ -10,6 +10,8 @@ namespace avkit
 
 struct codec_options
 {
+    // video options...
+    cppkit::ck_nullable<cppkit::ck_string> video_codec;    
     cppkit::ck_nullable<int> gop_size;
     cppkit::ck_nullable<int> bit_rate;
     cppkit::ck_nullable<int> width;
@@ -29,6 +31,14 @@ struct codec_options
     cppkit::ck_nullable<cppkit::ck_string> preset;
     cppkit::ck_nullable<cppkit::ck_string> tune;
     cppkit::ck_nullable<cppkit::ck_string> x264opts;
+
+    // audio options...
+    cppkit::ck_nullable<cppkit::ck_string> audio_codec;
+    cppkit::ck_nullable<int> audio_sample_rate;
+    cppkit::ck_nullable<int> audio_channels;
+    cppkit::ck_nullable<cppkit::ck_string> audio_format;
+    cppkit::ck_nullable<int> audio_time_base_num;
+    cppkit::ck_nullable<int> audio_time_base_den;
 
     // From here on these options do not correspond to AVCodecContext fields.
 
@@ -56,6 +66,12 @@ struct codec_options get_jpeg_options( int picWidth,
                                        int qmin = DEFAULT_JPEG_QMIN,
                                        int qmax = DEFAULT_JPEG_QMAX );
 
+void add_audio_options( struct codec_options& options,
+                        int sampleRate,
+                        int channels,
+                        const cppkit::ck_string& audioFormats,
+                        int timeBaseNum,
+                        int timeBaseDen );
 }
 
 #endif

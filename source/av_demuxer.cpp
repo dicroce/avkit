@@ -316,6 +316,13 @@ void av_demuxer::_open_streams()
 
                 if( _videoStreamIndex == STREAM_TYPE_UNKNOWN )
                     _videoStreamIndex = i;
+
+				// if codec is not h.264, then applying our bitstream filter makes no sense.
+                if( _bsfc && (_context->streams[i]->codec->codec_id != CODEC_ID_H264) )
+                {
+                    av_bitstream_filter_close( _bsfc );
+                    _bsfc = NULL;
+                }
             }
             else if( _context->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO )
             {

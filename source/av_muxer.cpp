@@ -1,6 +1,7 @@
 
 #include "avkit/av_muxer.h"
 #include "avkit/locky.h"
+#include "avkit/utils.h"
 
 extern "C"
 {
@@ -38,7 +39,10 @@ av_muxer::av_muxer( const struct codec_options& options,
     if( !_context->oformat )
         CK_THROW(("Unable to guess output format."));
 
-    _context->oformat->video_codec = CODEC_ID_H264;
+    if( _options.video_codec.is_null() )
+        CK_THROW(("Please provide a video_codec name option."));
+
+    _context->oformat->video_codec = _codec_name_to_id( _options.video_codec.value() );
 
     _stream = avformat_new_stream( _context, NULL );
     if( !_stream )
@@ -46,7 +50,7 @@ av_muxer::av_muxer( const struct codec_options& options,
 
     avcodec_get_context_defaults3( _stream->codec, NULL );
 
-    _stream->codec->codec_id = CODEC_ID_H264;
+    _stream->codec->codec_id = _codec_name_to_id( _options.video_codec.value() );
     _stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
 
     apply_codec_options( options );

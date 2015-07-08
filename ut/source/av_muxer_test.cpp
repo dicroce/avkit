@@ -66,6 +66,7 @@ void av_muxer_test::test_recontainerize()
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.gop_size = 15;
     options.bit_rate = 1424400; // size of gop * 8 == bit_rate
     options.width = 1280;

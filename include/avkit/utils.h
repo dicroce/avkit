@@ -3,7 +3,13 @@
 #define __avkit_utils_h
 
 #include "cppkit/ck_types.h"
+#include "cppkit/ck_string.h"
 #include <climits>
+
+extern "C"
+{
+#include "libavcodec/avcodec.h"
+}
 
 namespace avkit
 {
@@ -17,6 +23,8 @@ void aspect_correct_dimensions( uint16_t streamWidth, uint16_t streamHeight,
 double q_to_d( int num, int den );
 
 void d_to_q( double val, int& num, int& den, int max = INT_MAX );
+
+AVCodecID _codec_name_to_id( const cppkit::ck_string& name );
 
 }
 

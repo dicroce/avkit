@@ -77,4 +77,20 @@ void d_to_q( double val, int& num, int& den, int max )
     den = q.den;
 }
 
+AVCodecID _codec_name_to_id( const cppkit::ck_string& name )
+{
+    if( name.to_lower() == "h264" )
+        return CODEC_ID_H264;
+    else if( name.to_lower() == "s16le" )
+        return CODEC_ID_PCM_S16LE;
+    else if( name.to_lower() == "s16be" )
+        return CODEC_ID_PCM_S16BE;
+    else if( name.to_lower() == "u16le" )
+        return CODEC_ID_PCM_U16LE;
+    else if( name.to_lower() == "u16be" )
+        return CODEC_ID_PCM_U16BE;
+
+    CK_THROW(("Unknown/unsupported codec name."));
+}
+
 }

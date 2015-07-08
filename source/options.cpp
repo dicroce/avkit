@@ -10,6 +10,7 @@ struct codec_options get_fast_h264_decoder_options()
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.thread_count = 2;
     options.tune = "zerolatency";
 
@@ -20,6 +21,7 @@ struct codec_options get_normal_h264_decoder_options()
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.tune = "zerolatency";
 
     return options;
@@ -29,6 +31,7 @@ struct codec_options get_fast_h264_encoder_options( int bitRate, int picWidth, i
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.gop_size = gopSize;
     options.bit_rate = bitRate;
     options.width = picWidth;
@@ -52,6 +55,7 @@ struct codec_options get_hls_h264_encoder_options( int bitRate, int picWidth, in
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.gop_size = gopSize;
     options.bit_rate = bitRate;
     options.width = picWidth;
@@ -71,6 +75,7 @@ struct codec_options get_transcode_export_h264_encoder_options( int bitRate, int
 {
     struct codec_options options;
 
+    options.video_codec = "h264";
     options.gop_size = gopSize;
     options.bit_rate = bitRate;
     options.width = picWidth;
@@ -99,6 +104,20 @@ struct codec_options get_jpeg_options( int picWidth,
     options.qmax = qmax;
 
     return options;
+}
+
+void add_audio_options( struct codec_options& options,
+                        int sampleRate,
+                        int channels,
+                        const cppkit::ck_string& audioFormats,
+                        int timeBaseNum,
+                        int timeBaseDen )
+{
+    options.audio_sample_rate = sampleRate;
+    options.audio_channels = channels;
+    options.audio_format = audioFormats;
+    options.audio_time_base_num = timeBaseNum;
+    options.audio_time_base_den = timeBaseDen;        
 }
 
 }
