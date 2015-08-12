@@ -3,6 +3,7 @@
 #define __avkit_av_packet_h
 
 #include "cppkit/ck_types.h"
+#include "cppkit/os/ck_exports.h"
 
 class av_packet_test;
 
@@ -14,39 +15,39 @@ class av_packet
     friend class ::av_packet_test;
 
 public:
-    av_packet( size_t sz );
-    av_packet( uint8_t* src, size_t sz, bool owning = true );
-    av_packet( const av_packet& obj );
-    av_packet( av_packet&& obj ) noexcept;
-    virtual ~av_packet() noexcept;
+    CK_API av_packet( size_t sz );
+    CK_API av_packet( uint8_t* src, size_t sz, bool owning = true );
+    CK_API av_packet( const av_packet& obj );
+    CK_API av_packet( av_packet&& obj ) noexcept;
+    CK_API virtual ~av_packet() noexcept;
 
-    av_packet& operator = ( const av_packet& obj );
-    av_packet& operator = ( av_packet&& obj ) noexcept;
+    CK_API av_packet& operator = ( const av_packet& obj );
+    CK_API av_packet& operator = ( av_packet&& obj ) noexcept;
 
-    uint8_t* map() const;
+    CK_API uint8_t* map() const;
 
-    size_t get_buffer_size() const;
+    CK_API size_t get_buffer_size() const;
 
-    void set_data_size( size_t sz );
-    size_t get_data_size() const;
+    CK_API void set_data_size( size_t sz );
+    CK_API size_t get_data_size() const;
 
-    void set_pts( int64_t pts );
-    int64_t get_pts() const;
+    CK_API void set_pts( int64_t pts );
+    CK_API int64_t get_pts() const;
 
-    void set_dts( int64_t dts );
-    int64_t get_dts() const;
+    CK_API void set_dts( int64_t dts );
+    CK_API int64_t get_dts() const;
 
-    void set_ts_freq( uint32_t freq );
-    uint32_t get_ts_freq() const;
+    CK_API void set_ts_freq( uint32_t freq );
+    CK_API uint32_t get_ts_freq() const;
 
-    void set_key( bool key );
-    bool is_key() const;
+    CK_API void set_key( bool key );
+    CK_API bool is_key() const;
 
-    void set_width( uint16_t width );
-    uint16_t get_width() const;
+    CK_API void set_width( uint16_t width );
+    CK_API uint16_t get_width() const;
 
-    void set_height( uint16_t height );
-    uint16_t get_height() const;
+    CK_API void set_height( uint16_t height );
+    CK_API uint16_t get_height() const;
 
 private:
     void _clear() noexcept;
