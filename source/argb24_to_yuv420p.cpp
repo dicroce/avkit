@@ -51,7 +51,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
                 // are native endian... Which means they will be different on little endian than on big endian. By
                 // using x_htonl(), I can achieve portable code.
                 uint32_t word = *((uint32_t*)&src[4 * i]);
-                uint32_t pixel = x_htonl( word );
+                uint32_t pixel = ck_htonl( word );
                 uint8_t* rgba = (uint8_t*)&pixel;
 
                 uint8_t r = *(rgba + 1);
@@ -64,7 +64,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
                 yuv[vpos++] = ((112*r + -94*g + -18*b) >> 8) + 128;
 
                 word = *((uint32_t*)&src[4 * i]);
-                pixel = x_htonl( word );
+                pixel = ck_htonl( word );
                 rgba = (uint8_t*)&pixel;
 
                 r = *(rgba + 1);
@@ -79,7 +79,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
             for( size_t x = 0; x < width; x += 1 )
             {
                 uint32_t word = *((uint32_t*)&src[4 * i]);
-                uint32_t pixel = x_htonl( word );
+                uint32_t pixel = ck_htonl( word );
                 uint8_t* rgba = (uint8_t*)&pixel;
 
                 uint8_t r = *(rgba + 1);
