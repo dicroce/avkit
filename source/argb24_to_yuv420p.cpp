@@ -49,7 +49,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
             {
                 // Here I read a 4 byte quantity and on some architectures, swap it. Why swap? Well, cairo buffers
                 // are native endian... Which means they will be different on little endian than on big endian. By
-                // using x_htonl(), I can achieve portable code.
+                // using ck_htonl(), I can achieve portable code.
                 uint32_t word = *((uint32_t*)&src[4 * i]);
                 uint32_t pixel = ck_htonl( word );
                 uint8_t* rgba = (uint8_t*)&pixel;

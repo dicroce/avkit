@@ -46,32 +46,32 @@ struct codec_options
                                            // use this decoder for making thumbnails.
 };
 
-struct codec_options get_fast_h264_decoder_options();
+CK_API struct codec_options get_fast_h264_decoder_options();
 
-struct codec_options get_normal_h264_decoder_options();
+CK_API struct codec_options get_normal_h264_decoder_options();
 
-struct codec_options get_fast_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
+CK_API struct codec_options get_fast_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
 
-struct codec_options get_hls_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
+CK_API struct codec_options get_hls_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
 
-struct codec_options get_transcode_export_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
+CK_API struct codec_options get_transcode_export_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
 
 const int DEFAULT_JPEG_BIT_RATE = 100000;
 const int DEFAULT_JPEG_QMIN = 8;
 const int DEFAULT_JPEG_QMAX = 8;
 
-struct codec_options get_jpeg_options( int picWidth,
-                                       int picHeight,
-                                       int bitRate = DEFAULT_JPEG_BIT_RATE,
-                                       int qmin = DEFAULT_JPEG_QMIN,
-                                       int qmax = DEFAULT_JPEG_QMAX );
+CK_API struct codec_options get_jpeg_options( int picWidth,
+					      int picHeight,
+					      int bitRate = DEFAULT_JPEG_BIT_RATE,
+					      int qmin = DEFAULT_JPEG_QMIN,
+					      int qmax = DEFAULT_JPEG_QMAX );
 
-void add_audio_options( struct codec_options& options,
-                        int sampleRate,
-                        int channels,
-                        const cppkit::ck_string& audioFormats,
-                        int timeBaseNum,
-                        int timeBaseDen );
+CK_API void add_audio_options( struct codec_options& options,
+			       int sampleRate,
+			       int channels,
+			       const cppkit::ck_string& audioFormats,
+			       int timeBaseNum,
+			       int timeBaseDen );
 }
 
 #endif

@@ -12,25 +12,25 @@ namespace avkit
 class av_packet_factory
 {
 public:
-    virtual std::shared_ptr<av_packet> get( size_t sz ) = 0;
+    CK_API virtual std::shared_ptr<av_packet> get( size_t sz ) = 0;
 };
 
 class av_packet_factory_default : public av_packet_factory
 {
 public:
-    virtual std::shared_ptr<av_packet> get( size_t sz ) { return std::make_shared<av_packet>( sz ); }
+    CK_API virtual std::shared_ptr<av_packet> get( size_t sz ) { return std::make_shared<av_packet>( sz ); }
 };
 
 class av_packet_factory_preallocated : public av_packet_factory
 {
 public:
-    av_packet_factory_preallocated( size_t numPackets, size_t packetSize ) :
+    CK_API av_packet_factory_preallocated( size_t numPackets, size_t packetSize ) :
         _pool( std::make_shared<cppkit::ck_pool<av_packet> >( numPackets, packetSize ) ),
         _packetSize( packetSize )
     {
     }
 
-    virtual std::shared_ptr<av_packet> get( size_t sz )
+    CK_API virtual std::shared_ptr<av_packet> get( size_t sz )
     {
         if( sz > _packetSize )
             CK_THROW(("Requested packet size exceeds preallocated packet size."));
