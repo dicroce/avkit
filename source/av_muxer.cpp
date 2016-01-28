@@ -1,7 +1,6 @@
 
 #include "avkit/av_muxer.h"
 #include "avkit/locky.h"
-#include "avkit/utils.h"
 
 extern "C"
 {
@@ -18,8 +17,7 @@ av_muxer::av_muxer( const struct codec_options& options,
     _options( options ),
     _fileName( fileName ),
     _context( NULL ),
-    _videoStream( NULL ),
-    _audioStream( NULL ),
+    _stream( NULL ),
     _location( location ),
     _ts( 0 ),
     _oweTrailer( false ),
@@ -40,55 +38,49 @@ av_muxer::av_muxer( const struct codec_options& options,
     if( !_context->oformat )
         CK_THROW(("Unable to guess output format."));
 
-    if( _options.video_codec.is_null() )
-        CK_THROW(("Please provide a video_codec name option."));
+    _context->oformat->video_codec = CODEC_ID_H264;
 
-    _context->oformat->video_codec = _codec_name_to_id( _options.video_codec.value() );
-
-    _videoStream = avformat_new_stream( _context, NULL );
-    if( !_videoStream )
+    _stream = avformat_new_stream( _context, NULL );
+    if( !_stream )
         CK_THROW(("Unable to allocate output stream."));
 
-    avcodec_get_context_defaults3( _videoStream->codec, NULL );
+    avcodec_get_context_defaults3( _stream->codec, NULL );
 
-    _videoStream->codec->codec_id = _codec_name_to_id( _options.video_codec.value() );
-    _videoStream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
+    _stream->codec->codec_id = CODEC_ID_H264;
+    _stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
 
     apply_codec_options( options );
 
     if( !_options.gop_size.is_null() )
-        _videoStream->codec->gop_size = _options.gop_size.value();
+        _stream->codec->gop_size = _options.gop_size.value();
     else CK_THROW(("Required option missing: gop_size"));
 
-    _videoStream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
+    _stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if( _context->oformat->flags & AVFMT_GLOBALHEADER )
-        _videoStream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
-        
-    if( !_options.audio_codec.is_null() )
-    {
-        _context->oformat->audio_codec = _codec_name_to_id( _options.audio_codec.value() );
-        
-        _audioStream = avformat_new_stream( _context, NULL );
-        if( !_audioStream )
-            CK_THROW(("Unable to allocate output audio stream."));
-            
-        avcodec_get_context_defaults3( _audioStream->codec, NULL );
-        
-        _audioStream->codec->codec_id = _codec_name_to_id( _options.audio_codec.value() );
-        _audioStream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-    }
+        _stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
 }
 
 av_muxer::~av_muxer() throw()
 {
-    if( !_isTS && _oweTrailer )
+    if( _isTS )
+    {
+        // So, we can't write trailers when we make TS files, but if we don't call av_write_trailer() at shutdown, we
+        // leak. So, doing it here in dtor. Reopening the IO contexts is a requirement of av_write_trailer()...
+        if( _context->pb == NULL )
+            _open_io();
+
         av_write_trailer( _context );
+    }
+    else if( _oweTrailer )
+    {
+        av_write_trailer( _context );
+    }
 
     _close_io();
 
-    if( _videoStream->codec->extradata )
-        av_freep( &_videoStream->codec->extradata );
+    if( _stream->codec->extradata )
+        av_freep( &_stream->codec->extradata );
 
     avformat_free_context( _context );
 }
@@ -104,12 +96,12 @@ void av_muxer::set_extra_data( std::shared_ptr<cppkit::ck_memory> extraData )
         CK_LOG_INFO("Extradata not required for %s container.",_fileName.c_str());
     else
     {
-        _videoStream->codec->extradata = (uint8_t*)av_mallocz( extraData->size_data() );
-        if( !_videoStream->codec->extradata )
+        _stream->codec->extradata = (uint8_t*)av_mallocz( extraData->size_data() );
+        if( !_stream->codec->extradata )
             CK_THROW(("Unable to allocate extradata storage."));
-        _videoStream->codec->extradata_size = (int)extraData->size_data();
+        _stream->codec->extradata_size = (int)extraData->size_data();
 
-        memcpy( _videoStream->codec->extradata, extraData->map().get_ptr(), extraData->size_data() );
+        memcpy( _stream->codec->extradata, extraData->map().get_ptr(), extraData->size_data() );
     }
 }
 
@@ -145,14 +137,14 @@ void av_muxer::write_video_packet( shared_ptr<av_packet> input, bool keyFrame )
     AVPacket pkt;
     av_init_packet( &pkt );
 
-    pkt.stream_index = _videoStream->index;
+    pkt.stream_index = _stream->index;
     pkt.data = input->map();
     pkt.size = (int)input->get_data_size();
 
     pkt.pts = _ts;
     pkt.dts = _ts;
 
-    _ts += av_rescale_q(1, _videoStream->codec->time_base, _videoStream->time_base);
+    _ts += av_rescale_q(1, _stream->codec->time_base, _stream->time_base);
 
     pkt.flags |= (keyFrame) ? AV_PKT_FLAG_KEY : 0;
 
@@ -207,33 +199,33 @@ void av_muxer::apply_codec_options( const struct codec_options& options )
     if( !_options.profile.is_null() )
     {
         if( _options.profile.value().to_lower() == "baseline" )
-            _videoStream->codec->profile = FF_PROFILE_H264_BASELINE;
+            _stream->codec->profile = FF_PROFILE_H264_BASELINE;
         else if( _options.profile.value().to_lower() == "main" )
-            _videoStream->codec->profile = FF_PROFILE_H264_MAIN;
+            _stream->codec->profile = FF_PROFILE_H264_MAIN;
         else if( _options.profile.value().to_lower() == "high" )
-            _videoStream->codec->profile = FF_PROFILE_H264_HIGH;
+            _stream->codec->profile = FF_PROFILE_H264_HIGH;
 
-        av_opt_set( _videoStream->codec->priv_data, "profile", _options.profile.value().to_lower().c_str(), 0 );
+        av_opt_set( _stream->codec->priv_data, "profile", _options.profile.value().to_lower().c_str(), 0 );
     }
 
     if( !_options.bit_rate.is_null() )
-        _videoStream->codec->bit_rate = _options.bit_rate.value();
+        _stream->codec->bit_rate = _options.bit_rate.value();
     else CK_THROW(("Required option missing: bit_rate"));
 
     if( !_options.width.is_null() )
-        _videoStream->codec->width = _options.width.value();
+        _stream->codec->width = _options.width.value();
     else CK_THROW(("Required option missing: width"));
 
     if( !_options.height.is_null() )
-        _videoStream->codec->height = _options.height.value();
+        _stream->codec->height = _options.height.value();
     else CK_THROW(("Required option missing: height"));
 
     if( !_options.time_base_num.is_null() )
-        _videoStream->codec->time_base.num = _options.time_base_num.value();
+        _stream->codec->time_base.num = _options.time_base_num.value();
     else CK_THROW(("Required option missing: time_base_num"));
 
     if( !_options.time_base_den.is_null() )
-        _videoStream->codec->time_base.den = _options.time_base_den.value();
+        _stream->codec->time_base.den = _options.time_base_den.value();
     else CK_THROW(("Required option missing: time_base_den"));
 }
 
