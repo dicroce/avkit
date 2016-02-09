@@ -60,8 +60,7 @@ private:
     struct codec_options _options;
     cppkit::ck_string _fileName;
     AVFormatContext* _context;
-    AVStream* _videoStream;
-    AVStream* _audioStream;
+    AVStream* _stream;
     OUTPUT_LOCATION _location;
     int64_t _ts;
     bool _oweTrailer;
