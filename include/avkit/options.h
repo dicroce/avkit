@@ -11,7 +11,7 @@ namespace avkit
 struct codec_options
 {
     // video options...
-    cppkit::ck_nullable<cppkit::ck_string> video_codec;    
+    cppkit::ck_nullable<cppkit::ck_string> video_codec;
     cppkit::ck_nullable<int> gop_size;
     cppkit::ck_nullable<int> bit_rate;
     cppkit::ck_nullable<int> width;

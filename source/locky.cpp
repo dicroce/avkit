@@ -14,21 +14,25 @@ void locky::register_ffmpeg()
 {
     av_register_all();
 
+    avformat_network_init();
+
     av_lockmgr_register( locky::_locky_cb );
 
     _registered = true;
-    
+
     FULL_MEM_BARRIER();
 }
 
 void locky::unregister_ffmpeg()
 {
+    avformat_network_deinit();
+
     av_lockmgr_register( NULL );
 
     locky::_locks.clear();
-    
+
     _registered = false;
-    
+
     FULL_MEM_BARRIER();
 }
 
