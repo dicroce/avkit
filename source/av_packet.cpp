@@ -12,7 +12,7 @@ using namespace avkit;
 static const size_t PADDING = 16;
 
 av_packet::av_packet( size_t sz ) :
-    _bufferSize( ((sz % PADDING)==0) ? sz : sz + (PADDING - (sz % PADDING)) ),
+    _bufferSize( sz + PADDING ),
     _requestedSize( sz ),
     _owning( true ),
     _buffer( NULL ),
@@ -30,7 +30,7 @@ av_packet::av_packet( size_t sz ) :
 }
 
 av_packet::av_packet( uint8_t* src, size_t sz, bool owning ) :
-    _bufferSize( ((sz % PADDING)==0) ? sz : sz + (PADDING - (sz % PADDING)) ),
+    _bufferSize( sz + PADDING ),
     _requestedSize( sz ),
     _owning( owning ),
     _buffer( src ),
