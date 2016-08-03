@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(avkit)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 set(SOURCES include/avkit/argb24_to_yuv420p.h
             include/avkit/av_demuxer.h
             include/avkit/av_muxer.h

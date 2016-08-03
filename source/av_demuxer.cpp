@@ -149,9 +149,7 @@ double av_demuxer::get_seconds_between_frames( int streamIndex ) const
 
 pair<int,int> av_demuxer::get_time_base( int streamIndex ) const
 {
-    AVCodecContext* codecContext = _context->streams[streamIndex]->codec;
-
-    return make_pair(codecContext->time_base.num, (codecContext->time_base.den/2));
+    return make_pair(_context->streams[streamIndex]->time_base.num, _context->streams[streamIndex]->time_base.den);
 }
 
 bool av_demuxer::read_frame( int& streamIndex )
@@ -204,6 +202,11 @@ shared_ptr<av_packet> av_demuxer::get() const
 
     pkt->set_pts( _deMuxPkt.pts );
     pkt->set_dts( _deMuxPkt.dts );
+    pkt->set_duration( _deMuxPkt.duration );
+
+    auto clockRate = get_time_base( _deMuxPkt.stream_index );
+
+    pkt->set_ts_freq( clockRate.second );
 
     if( is_key() )
         pkt->set_key( true );
@@ -297,6 +300,8 @@ void av_demuxer::_open_streams()
 {
     if( avformat_open_input( &_context, _fileName.c_str(), NULL, NULL ) < 0 )
         CK_THROW(("Unable to open input file."));
+
+    _context->max_analyze_duration = 1;
 
     _streamTypes.clear();
 

@@ -22,7 +22,8 @@ av_packet::av_packet( size_t sz ) :
     _ticksInSecond( 90000 ),
     _key( false ),
     _width( 0 ),
-    _height( 0 )
+    _height( 0 ),
+    _duration( 0 )
 {
     _buffer = (uint8_t*)av_malloc( _bufferSize );
     if( !_buffer )
@@ -40,7 +41,8 @@ av_packet::av_packet( uint8_t* src, size_t sz, bool owning ) :
     _ticksInSecond( 90000 ),
     _key( false ),
     _width( 0 ),
-    _height( 0 )
+    _height( 0 ),
+    _duration( 0 )
 {
     if( _owning )
     {
@@ -66,7 +68,8 @@ av_packet::av_packet( const av_packet& obj ) :
     _ticksInSecond( 90000 ),
     _key( false ),
     _width( 0 ),
-    _height( 0 )
+    _height( 0 ),
+    _duration( 0 )
 {
     _clear();
 
@@ -88,12 +91,7 @@ av_packet::av_packet( const av_packet& obj ) :
         _buffer = obj._buffer;
     }
 
-    _pts = obj._pts;
-    _dts = obj._dts;
-    _ticksInSecond = obj._ticksInSecond;
-    _key = obj._key;
-    _width = obj._width;
-    _height = obj._height;
+    migrate_md_from( obj );
 }
 
 av_packet::av_packet( av_packet&& obj ) noexcept :
@@ -107,7 +105,8 @@ av_packet::av_packet( av_packet&& obj ) noexcept :
     _ticksInSecond( std::move( obj._ticksInSecond ) ),
     _key( std::move( obj._key ) ),
     _width( std::move( obj._width ) ),
-    _height( std::move( obj._height ) )
+    _height( std::move( obj._height ) ),
+    _duration( std::move( obj._duration ) )
 {
     obj._buffer = NULL;
     obj._bufferSize = 0;
@@ -140,12 +139,7 @@ av_packet& av_packet::operator = ( const av_packet& obj )
         _buffer = obj._buffer;
     }
 
-    _pts = obj._pts;
-    _dts = obj._dts;
-    _ticksInSecond = obj._ticksInSecond;
-    _key = obj._key;
-    _width = obj._width;
-    _height = obj._height;
+    migrate_md_from( obj );
 
     return *this;
 }
@@ -163,6 +157,7 @@ av_packet& av_packet::operator = ( av_packet&& obj ) noexcept
     _key = std::move( obj._key );
     _width = std::move( obj._width );
     _height = std::move( obj._height );
+    _duration = std::move( obj._duration );
 
     obj._buffer = NULL;
     obj._bufferSize = 0;
@@ -193,6 +188,17 @@ size_t av_packet::get_data_size() const
     return _dataSize;
 }
 
+void av_packet::migrate_md_from( const av_packet& obj )
+{
+    _pts = obj._pts;
+    _dts = obj._dts;
+    _ticksInSecond = obj._ticksInSecond;
+    _key = obj._key;
+    _width = obj._width;
+    _height = obj._height;
+    _duration = obj._duration;
+}
+
 void av_packet::set_pts( int64_t pts )
 {
     _pts = pts;
@@ -221,6 +227,16 @@ void av_packet::set_ts_freq( uint32_t freq )
 uint32_t av_packet::get_ts_freq() const
 {
     return _ticksInSecond;
+}
+
+void av_packet::set_duration( uint32_t duration )
+{
+    _duration = duration;
+}
+
+uint32_t av_packet::get_duration() const
+{
+    return _duration;
 }
 
 void av_packet::set_key( bool key )

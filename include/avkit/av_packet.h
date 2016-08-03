@@ -31,6 +31,8 @@ public:
     CK_API void set_data_size( size_t sz );
     CK_API size_t get_data_size() const;
 
+    CK_API void migrate_md_from( const av_packet& obj );
+
     CK_API void set_pts( int64_t pts );
     CK_API int64_t get_pts() const;
 
@@ -39,6 +41,9 @@ public:
 
     CK_API void set_ts_freq( uint32_t freq );
     CK_API uint32_t get_ts_freq() const;
+
+    CK_API void set_duration( uint32_t duration );
+    CK_API uint32_t get_duration() const;
 
     CK_API void set_key( bool key );
     CK_API bool is_key() const;
@@ -74,6 +79,8 @@ private:
     uint16_t _width;
     // If known, the height of the frame
     uint16_t _height;
+    // duration of packet
+    uint32_t _duration;
 };
 
 }
