@@ -18,11 +18,11 @@ public:
     CK_API av_packet( size_t sz );
     CK_API av_packet( uint8_t* src, size_t sz, bool owning = true );
     CK_API av_packet( const av_packet& obj );
-    CK_API av_packet( av_packet&& obj ) noexcept;
-    CK_API virtual ~av_packet() noexcept;
+    CK_API av_packet( av_packet&& obj ) throw();
+    CK_API virtual ~av_packet() throw();
 
     CK_API av_packet& operator = ( const av_packet& obj );
-    CK_API av_packet& operator = ( av_packet&& obj ) noexcept;
+    CK_API av_packet& operator = ( av_packet&& obj ) throw();
 
     CK_API uint8_t* map() const;
 
@@ -55,7 +55,7 @@ public:
     CK_API uint16_t get_height() const;
 
 private:
-    void _clear() noexcept;
+    void _clear() throw();
 
     // The actual size of the buffer we may or may not have allocated (includes padding).
     size_t _bufferSize;

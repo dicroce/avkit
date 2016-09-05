@@ -94,7 +94,7 @@ av_packet::av_packet( const av_packet& obj ) :
     migrate_md_from( obj );
 }
 
-av_packet::av_packet( av_packet&& obj ) noexcept :
+av_packet::av_packet( av_packet&& obj ) throw() :
     _bufferSize( std::move( obj._bufferSize ) ),
     _requestedSize( std::move( obj._requestedSize ) ),
     _owning( std::move( obj._owning ) ),
@@ -113,7 +113,7 @@ av_packet::av_packet( av_packet&& obj ) noexcept :
     obj._dataSize = 0;
 }
 
-av_packet::~av_packet() noexcept
+av_packet::~av_packet() throw()
 {
     _clear();
 }
@@ -144,7 +144,7 @@ av_packet& av_packet::operator = ( const av_packet& obj )
     return *this;
 }
 
-av_packet& av_packet::operator = ( av_packet&& obj ) noexcept
+av_packet& av_packet::operator = ( av_packet&& obj ) throw()
 {
     _bufferSize = std::move( obj._bufferSize );
     _requestedSize = std::move( obj._requestedSize );
@@ -269,7 +269,7 @@ uint16_t av_packet::get_height() const
     return _height;
 }
 
-void av_packet::_clear() noexcept
+void av_packet::_clear() throw()
 {
     if( _owning && _buffer )
         av_free( _buffer );
