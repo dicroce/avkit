@@ -301,7 +301,7 @@ void av_demuxer::_open_streams()
     if( avformat_open_input( &_context, _fileName.c_str(), NULL, NULL ) < 0 )
         CK_THROW(("Unable to open input file."));
 
-    _context->max_analyze_duration = 1;
+    //_context->max_analyze_duration = 1;
 
     _streamTypes.clear();
 
