@@ -194,7 +194,15 @@ shared_ptr<av_packet> h264_decoder::get()
     if( _outputHeight == 0 )
         _outputHeight = _context->height;
 
-    size_t pictureSize = (size_t)(_outputWidth * _outputHeight * 1.5);
+    auto fmt = (_options.jpeg_source.is_null()) ? PIX_FMT_YUV420P : PIX_FMT_YUVJ420P;
+
+    if( !_options.pict_type.is_null() && _options.pict_type.value() != "yuv420p" )
+    {
+        if( _options.pict_type.value() == "rgba" )
+            fmt = PIX_FMT_RGBA;
+    }
+
+    size_t pictureSize = (fmt == PIX_FMT_RGBA) ? (size_t)((_outputWidth * 4) * _outputHeight) : (size_t)(_outputWidth * _outputHeight * 1.5);
     shared_ptr<av_packet> pkt = _pf->get( pictureSize );
     pkt->set_data_size( pictureSize );
     pkt->set_width( _outputWidth );
@@ -207,7 +215,7 @@ shared_ptr<av_packet> h264_decoder::get()
                                   _context->pix_fmt,
                                   _outputWidth,
                                   _outputHeight,
-                                  (_options.jpeg_source.is_null()) ? PIX_FMT_YUV420P : PIX_FMT_YUVJ420P,
+                                  fmt,
                                   SWS_BICUBIC,
                                   NULL,
                                   NULL,
@@ -222,15 +230,24 @@ shared_ptr<av_packet> h264_decoder::get()
     uint8_t* dest = pkt->map();
 
     AVPicture pict;
-    pict.data[0] = dest;
-    dest += _outputWidth * _outputHeight;
-    pict.data[1] = dest;
-    dest += (_outputWidth/4) * _outputHeight;
-    pict.data[2] = dest;
 
-    pict.linesize[0] = _outputWidth;
-    pict.linesize[1] = _outputWidth/2;
-    pict.linesize[2] = _outputWidth/2;
+    if( fmt == PIX_FMT_RGBA )
+    {
+        pict.data[0] = dest;
+        pict.linesize[0] = _outputWidth * 4;
+    }
+    else
+    {
+        pict.data[0] = dest;
+        dest += _outputWidth * _outputHeight;
+        pict.data[1] = dest;
+        dest += (_outputWidth/4) * _outputHeight;
+        pict.data[2] = dest;
+
+        pict.linesize[0] = _outputWidth;
+        pict.linesize[1] = _outputWidth/2;
+        pict.linesize[2] = _outputWidth/2;
+    }
 
     int ret = sws_scale( _scaler,
                          _frame->data,

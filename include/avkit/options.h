@@ -32,6 +32,9 @@ struct codec_options
     cppkit::ck_nullable<cppkit::ck_string> tune;
     cppkit::ck_nullable<cppkit::ck_string> x264opts;
 
+    // "yuv420p", "rgba"
+    cppkit::ck_nullable<cppkit::ck_string> pict_type;
+
     // audio options...
     cppkit::ck_nullable<cppkit::ck_string> audio_codec;
     cppkit::ck_nullable<int> audio_sample_rate;
@@ -46,9 +49,9 @@ struct codec_options
                                            // use this decoder for making thumbnails.
 };
 
-CK_API struct codec_options get_fast_h264_decoder_options();
+CK_API struct codec_options get_fast_h264_decoder_options( const cppkit::ck_string& pict_type = "yuv420p" );
 
-CK_API struct codec_options get_normal_h264_decoder_options();
+CK_API struct codec_options get_normal_h264_decoder_options(  const cppkit::ck_string& pict_type = "yuv420p" );
 
 CK_API struct codec_options get_fast_h264_encoder_options( int bitRate, int picWidth, int picHeight, int gopSize, int timeBaseNum, int timeBaseDen );
 

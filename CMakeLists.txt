@@ -3,7 +3,7 @@ project(avkit)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(SOURCES include/avkit/argb24_to_yuv420p.h
+set(SOURCES include/avkit/bgra_to_yuv420p.h
             include/avkit/av_demuxer.h
             include/avkit/av_muxer.h
             include/avkit/av_packet.h
@@ -17,9 +17,11 @@ set(SOURCES include/avkit/argb24_to_yuv420p.h
             include/avkit/locky.h
             include/avkit/options.h
             include/avkit/utils.h
-            include/avkit/yuv420p_to_argb24.h
-            source/argb24_to_yuv420p.cpp
-            source/yuv420p_to_argb24.cpp
+            include/avkit/yuv420p_to_bgra.h
+            include/avkit/yuv420p_to_rgba.h
+            source/yuv420p_to_rgba.cpp
+            source/bgra_to_yuv420p.cpp
+            source/yuv420p_to_bgra.cpp
             source/h264mp4_to_annexb.cpp
             source/av_demuxer.cpp
             source/av_muxer.cpp

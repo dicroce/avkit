@@ -6,7 +6,7 @@ using namespace cppkit;
 namespace avkit
 {
 
-struct codec_options get_fast_h264_decoder_options()
+struct codec_options get_fast_h264_decoder_options( const ck_string& pict_type )
 {
     struct codec_options options;
 
@@ -14,15 +14,19 @@ struct codec_options get_fast_h264_decoder_options()
     options.thread_count = 2;
     options.tune = "zerolatency";
 
+    options.pict_type = pict_type;
+
     return options;
 }
 
-struct codec_options get_normal_h264_decoder_options()
+struct codec_options get_normal_h264_decoder_options( const ck_string& pict_type )
 {
     struct codec_options options;
 
     options.video_codec = "h264";
     options.tune = "zerolatency";
+
+    options.pict_type = pict_type;
 
     return options;
 }

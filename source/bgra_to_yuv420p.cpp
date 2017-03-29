@@ -1,5 +1,5 @@
 
-#include "avkit/argb24_to_yuv420p.h"
+#include "avkit/bgra_to_yuv420p.h"
 #include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
@@ -9,7 +9,7 @@ using namespace avkit;
 using namespace cppkit;
 using namespace std;
 
-argb24_to_yuv420p::argb24_to_yuv420p() :
+bgra_to_yuv420p::bgra_to_yuv420p() :
     _yuv420(),
     _pf( std::make_shared<av_packet_factory_default>() )
 {
@@ -17,11 +17,11 @@ argb24_to_yuv420p::argb24_to_yuv420p() :
         CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
 }
 
-argb24_to_yuv420p::~argb24_to_yuv420p() throw()
+bgra_to_yuv420p::~bgra_to_yuv420p() throw()
 {
 }
 
-void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size_t height )
+void bgra_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size_t height )
 {
     size_t pictureSize = (size_t)(width * height * 1.5);
     _yuv420 = _pf->get( pictureSize );
@@ -33,7 +33,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
     uint8_t* yuv = _yuv420->map();
     uint8_t* src = pkt->map();
 
-    /// Cairo ARGB24 buffers are stored "native endian" as 8 bit unsigned integer quantities in the order
+    /// Cairo bgra buffers are stored "native endian" as 8 bit unsigned integer quantities in the order
     /// ARGB.
 
     size_t imageSize = width * height;
@@ -92,7 +92,7 @@ void argb24_to_yuv420p::transform( shared_ptr<av_packet> pkt, size_t width, size
     }
 }
 
-shared_ptr<av_packet> argb24_to_yuv420p::get() const
+shared_ptr<av_packet> bgra_to_yuv420p::get() const
 {
     return std::move( _yuv420 );
 }

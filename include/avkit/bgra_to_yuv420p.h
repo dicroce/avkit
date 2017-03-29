@@ -1,6 +1,6 @@
 
-#ifndef __avkit_argb24_to_yuv420p_h
-#define __avkit_argb24_to_yuv420p_h
+#ifndef __avkit_bgra_to_yuv420p_h
+#define __avkit_bgra_to_yuv420p_h
 
 #include "avkit/av_packet.h"
 #include "avkit/av_packet_factory.h"
@@ -14,11 +14,11 @@
 namespace avkit
 {
 
-class argb24_to_yuv420p
+class bgra_to_yuv420p
 {
 public:
-    CK_API argb24_to_yuv420p();
-    CK_API virtual ~argb24_to_yuv420p() throw();
+    CK_API bgra_to_yuv420p();
+    CK_API virtual ~bgra_to_yuv420p() throw();
 
     CK_API void set_packet_factory( std::shared_ptr<av_packet_factory> pf ) { _pf = pf; }
 
@@ -27,8 +27,8 @@ public:
     CK_API std::shared_ptr<av_packet> get() const;
 
 private:
-    argb24_to_yuv420p( const argb24_to_yuv420p& obj );
-    argb24_to_yuv420p& operator = ( const argb24_to_yuv420p& );
+    bgra_to_yuv420p( const bgra_to_yuv420p& obj );
+    bgra_to_yuv420p& operator = ( const bgra_to_yuv420p& );
 
     std::shared_ptr<av_packet> _yuv420;
     std::shared_ptr<av_packet_factory> _pf;

@@ -1,5 +1,5 @@
 
-#include "avkit/yuv420p_to_argb24.h"
+#include "avkit/yuv420p_to_rgba.h"
 #include "avkit/locky.h"
 
 #include "cppkit/ck_exception.h"
@@ -10,7 +10,7 @@ using namespace avkit;
 using namespace cppkit;
 using namespace std;
 
-yuv420p_to_argb24::yuv420p_to_argb24() :
+yuv420p_to_rgba::yuv420p_to_rgba() :
     _rgb24(),
     _pf( std::make_shared<av_packet_factory_default>() ),
     _scaler( NULL ),
@@ -21,12 +21,12 @@ yuv420p_to_argb24::yuv420p_to_argb24() :
         CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
 }
 
-yuv420p_to_argb24::~yuv420p_to_argb24() throw()
+yuv420p_to_rgba::~yuv420p_to_rgba() throw()
 {
     _destroy_scaler();
 }
 
-void yuv420p_to_argb24::transform( shared_ptr<av_packet> input, size_t width, size_t height )
+void yuv420p_to_rgba::transform( shared_ptr<av_packet> input, size_t width, size_t height )
 {
     uint8_t* src = input->map();
 
@@ -67,12 +67,12 @@ void yuv420p_to_argb24::transform( shared_ptr<av_packet> input, size_t width, si
                          pict.linesize );
 }
 
-shared_ptr<av_packet> yuv420p_to_argb24::get()
+shared_ptr<av_packet> yuv420p_to_rgba::get()
 {
     return std::move( _rgb24 );
 }
 
-void yuv420p_to_argb24::_init_scaler( uint16_t width, uint16_t height )
+void yuv420p_to_rgba::_init_scaler( uint16_t width, uint16_t height )
 {
     int scaleFlags = SWS_FAST_BILINEAR;
 
@@ -81,7 +81,7 @@ void yuv420p_to_argb24::_init_scaler( uint16_t width, uint16_t height )
                               PIX_FMT_YUV420P,
                               width,
                               height,
-                              PIX_FMT_BGRA,
+                              PIX_FMT_RGBA,
                               scaleFlags,
                               NULL,
                               NULL,
@@ -91,7 +91,7 @@ void yuv420p_to_argb24::_init_scaler( uint16_t width, uint16_t height )
         CK_THROW(("Unable to allocate scaler context!"));
 }
 
-void yuv420p_to_argb24::_destroy_scaler()
+void yuv420p_to_rgba::_destroy_scaler()
 {
     if( _scaler )
     {

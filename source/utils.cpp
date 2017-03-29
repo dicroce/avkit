@@ -37,16 +37,12 @@ void aspect_correct_dimensions( uint16_t streamWidth, uint16_t streamHeight,
             else
                 scaleFactor = requestedHeight * 1.0f / streamHeight;
 
-            scaleFactor = min(scaleFactor, 1.0f);
-
             uint16_t scaledRoundedPixelWidth = (uint16_t)(streamWidth * scaleFactor + 0.5);
             uint16_t scaledRoundedPixelHeight = (uint16_t)(streamHeight * scaleFactor + 0.5);
 
             uint16_t multipleOfEightWidth = max( scaledRoundedPixelWidth / 8, 1) * 8;
             uint16_t multipleOfEightHeight = max( scaledRoundedPixelHeight / 8, 1) * 8;
 
-//            newEncodeWidth = min(multipleOfEightWidth, streamWidth);
-//            newEncodeHeight = min(multipleOfEightHeight, streamWidth);
             newEncodeWidth = multipleOfEightWidth;
             newEncodeHeight = multipleOfEightHeight;
         }
