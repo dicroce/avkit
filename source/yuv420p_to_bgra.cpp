@@ -78,10 +78,10 @@ void yuv420p_to_bgra::_init_scaler( uint16_t width, uint16_t height )
 
     _scaler = sws_getContext( width,
                               height,
-                              PIX_FMT_YUV420P,
+                              AV_PIX_FMT_YUV420P,
                               width,
                               height,
-                              PIX_FMT_BGRA,
+                              AV_PIX_FMT_BGRA,
                               scaleFlags,
                               NULL,
                               NULL,
