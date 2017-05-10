@@ -14,7 +14,7 @@ static const size_t DEFAULT_JPEG_ENCODE_BUFFER_SIZE = (1024*1024);
 #endif
 
 jpeg_encoder::jpeg_encoder( const struct codec_options& options, int encodeAttempts ) :
-    _codec( avcodec_find_encoder( CODEC_ID_MJPEG ) ),
+    _codec( avcodec_find_encoder( AV_CODEC_ID_MJPEG ) ),
     _context( avcodec_alloc_context3( _codec ) ),
     _options( options ),
     _encodeAttempts( encodeAttempts ),
@@ -30,13 +30,13 @@ jpeg_encoder::jpeg_encoder( const struct codec_options& options, int encodeAttem
     if( !_context )
         CK_THROW(("Unable to allocate MJPEG codec context."));
 
-    _context->codec_id = CODEC_ID_MJPEG;
+    _context->codec_id = AV_CODEC_ID_MJPEG;
     _context->codec_type = AVMEDIA_TYPE_VIDEO;
 
     _context->time_base.num = 1;
     _context->time_base.den = 15;
 
-    _context->pix_fmt = PIX_FMT_YUVJ420P;
+    _context->pix_fmt = AV_PIX_FMT_YUVJ420P;
     _context->color_range = AVCOL_RANGE_JPEG;
 
     _context->gop_size = 1;
@@ -79,7 +79,7 @@ jpeg_encoder::~jpeg_encoder() throw()
 void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
 {
     AVFrame frame;
-    avcodec_get_frame_defaults( &frame );
+    av_frame_unref( &frame );
 
     _output = _pf->get( DEFAULT_JPEG_ENCODE_BUFFER_SIZE );
 

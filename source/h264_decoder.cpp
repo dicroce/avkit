@@ -20,10 +20,10 @@ static const size_t DEFAULT_PADDING = 16;
 #endif
 
 h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttempts ) :
-    _codec( avcodec_find_decoder( CODEC_ID_H264 ) ),
+    _codec( avcodec_find_decoder( AV_CODEC_ID_H264 ) ),
     _context( avcodec_alloc_context3( _codec ) ),
     _options( options ),
-    _frame( avcodec_alloc_frame() ),
+    _frame( av_frame_alloc() ),
     _scaler( NULL ),
     _outputWidth( 0 ),
     _outputHeight( 0 ),
@@ -59,10 +59,10 @@ h264_decoder::h264_decoder( const struct codec_options& options, int decodeAttem
 }
 
 h264_decoder::h264_decoder( av_demuxer& deMuxer, const struct codec_options& options, int decodeAttempts ) :
-    _codec( avcodec_find_decoder( CODEC_ID_H264 ) ),
+    _codec( avcodec_find_decoder( AV_CODEC_ID_H264 ) ),
     _context( avcodec_alloc_context3( _codec ) ),
     _options( options ),
-    _frame( avcodec_alloc_frame() ),
+    _frame( av_frame_alloc() ),
     _scaler( NULL ),
     _outputWidth( 0 ),
     _outputHeight( 0 ),
@@ -194,15 +194,15 @@ shared_ptr<av_packet> h264_decoder::get()
     if( _outputHeight == 0 )
         _outputHeight = _context->height;
 
-    auto fmt = (_options.jpeg_source.is_null()) ? PIX_FMT_YUV420P : PIX_FMT_YUVJ420P;
+    auto fmt = (_options.jpeg_source.is_null()) ? AV_PIX_FMT_YUV420P : AV_PIX_FMT_YUVJ420P;
 
     if( !_options.pict_type.is_null() && _options.pict_type.value() != "yuv420p" )
     {
         if( _options.pict_type.value() == "rgba" )
-            fmt = PIX_FMT_RGBA;
+            fmt = AV_PIX_FMT_RGBA;
     }
 
-    size_t pictureSize = (fmt == PIX_FMT_RGBA) ? (size_t)((_outputWidth * 4) * _outputHeight) : (size_t)(_outputWidth * _outputHeight * 1.5);
+    size_t pictureSize = (fmt == AV_PIX_FMT_RGBA) ? (size_t)((_outputWidth * 4) * _outputHeight) : (size_t)(_outputWidth * _outputHeight * 1.5);
     shared_ptr<av_packet> pkt = _pf->get( pictureSize );
     pkt->set_data_size( pictureSize );
     pkt->set_width( _outputWidth );
@@ -231,7 +231,7 @@ shared_ptr<av_packet> h264_decoder::get()
 
     AVPicture pict;
 
-    if( fmt == PIX_FMT_RGBA )
+    if( fmt == AV_PIX_FMT_RGBA )
     {
         pict.data[0] = dest;
         pict.linesize[0] = _outputWidth * 4;

@@ -24,7 +24,7 @@ static const size_t DEFAULT_EXTRADATA_BUFFER_SIZE = (1024*256);
 h264_encoder::h264_encoder( const struct codec_options& options,
                             bool annexB,
                             int encodeAttempts ) :
-    _codec( avcodec_find_encoder( CODEC_ID_H264 ) ),
+    _codec( avcodec_find_encoder( AV_CODEC_ID_H264 ) ),
     _context( avcodec_alloc_context3( _codec ) ),
     _options( options ),
     _numTillKey( 0 ),
@@ -44,9 +44,9 @@ h264_encoder::h264_encoder( const struct codec_options& options,
     if( !_context )
         CK_THROW(("Unable to allocate H264 codec context."));
 
-    _context->codec_id = CODEC_ID_H264;
+    _context->codec_id = AV_CODEC_ID_H264;
     _context->codec_type = AVMEDIA_TYPE_VIDEO;
-    _context->pix_fmt = PIX_FMT_YUV420P;
+    _context->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if( !_options.gop_size.is_null() )
         _context->gop_size = _options.gop_size.value();
@@ -124,7 +124,7 @@ h264_encoder::h264_encoder( const struct codec_options& options,
 
     // We set this here to force FFMPEG to populate the extradata field (necessary if the output stream
     // is going to be muxed into a format with a global header (for example, mp4)).
-    _context->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    _context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     if( avcodec_open2( _context, _codec, NULL ) < 0 )
         CK_THROW(("Failed to open encoding context."));
@@ -145,7 +145,7 @@ h264_encoder::~h264_encoder() throw()
 void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_type type )
 {
     AVFrame frame;
-    avcodec_get_frame_defaults( &frame );
+    av_frame_unref( &frame );
 
     uint8_t* pic = input->map();
 

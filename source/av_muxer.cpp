@@ -38,7 +38,7 @@ av_muxer::av_muxer( const struct codec_options& options,
     if( !_context->oformat )
         CK_THROW(("Unable to guess output format."));
 
-    _context->oformat->video_codec = CODEC_ID_H264;
+    _context->oformat->video_codec = AV_CODEC_ID_H264;
 
     _stream = avformat_new_stream( _context, NULL );
     if( !_stream )
@@ -46,7 +46,7 @@ av_muxer::av_muxer( const struct codec_options& options,
 
     avcodec_get_context_defaults3( _stream->codec, NULL );
 
-    _stream->codec->codec_id = CODEC_ID_H264;
+    _stream->codec->codec_id = AV_CODEC_ID_H264;
     _stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
 
     apply_codec_options( options );
@@ -58,7 +58,7 @@ av_muxer::av_muxer( const struct codec_options& options,
     _stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if( _context->oformat->flags & AVFMT_GLOBALHEADER )
-        _stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        _stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 }
 
 av_muxer::~av_muxer() throw()
