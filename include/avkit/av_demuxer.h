@@ -8,6 +8,7 @@
 #include "cppkit/ck_nullable.h"
 #include <utility>
 #include <vector>
+#include <future>
 
 extern "C"
 {
@@ -89,6 +90,8 @@ private:
     av_demuxer( const av_demuxer& obj );
     av_demuxer& operator = ( const av_demuxer& obj );
 
+    static int _io_interrupt_callback(void* p);
+
     void _open_streams();
     void _open_custom_io_context( const uint8_t* buffer, size_t bufferSize );
 
@@ -114,6 +117,7 @@ private:
     int _audioPrimaryStreamIndex;
     AVBitStreamFilterContext* _bsfc;
     std::shared_ptr<av_packet_factory> _pf;
+    std::chrono::steady_clock::time_point _ioStart;
 };
 
 }

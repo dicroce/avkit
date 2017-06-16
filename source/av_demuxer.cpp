@@ -14,6 +14,7 @@ extern "C"
 using namespace avkit;
 using namespace cppkit;
 using namespace std;
+using namespace std::chrono;
 
 static const size_t DEFAULT_EXTRADATA_BUFFER_SIZE = (1024*256);
 
@@ -30,7 +31,8 @@ av_demuxer::av_demuxer( const ck_string& fileName, bool annexBFilter ) :
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
     _bsfc( (annexBFilter) ? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
-    _pf( std::make_shared<av_packet_factory_default>() )
+    _pf( std::make_shared<av_packet_factory_default>() ),
+    _ioStart()
 {
     if( !locky::is_registered() )
         CK_THROW(( "Please call locky::register_ffmpeg() before using this class."));
@@ -58,7 +60,8 @@ av_demuxer::av_demuxer( const uint8_t* buffer,
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
     _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
-    _pf( std::make_shared<av_packet_factory_default>() )
+    _pf( std::make_shared<av_packet_factory_default>() ),
+    _ioStart()
 {
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
@@ -83,7 +86,8 @@ av_demuxer::av_demuxer( shared_ptr<cppkit::ck_memory> buffer, bool annexBFilter 
     _videoStreamIndex( STREAM_TYPE_UNKNOWN ),
     _audioPrimaryStreamIndex( STREAM_TYPE_UNKNOWN ),
     _bsfc( (annexBFilter)? av_bitstream_filter_init( "h264_mp4toannexb" ) : NULL ),
-    _pf( std::make_shared<av_packet_factory_default>() )
+    _pf( std::make_shared<av_packet_factory_default>() ),
+    _ioStart()
 {
     _deMuxPkt.size = 0;
     _deMuxPkt.data = NULL;
@@ -155,6 +159,8 @@ pair<int,int> av_demuxer::get_time_base( int streamIndex ) const
 bool av_demuxer::read_frame( int& streamIndex )
 {
     _free_packet();
+
+    _ioStart = steady_clock::now();
 
     if( av_read_frame( _context, &_deMuxPkt ) >= 0 )
     {
@@ -296,15 +302,31 @@ struct stream_statistics av_demuxer::get_video_stream_statistics( const cppkit::
     return result;
 }
 
+int av_demuxer::_io_interrupt_callback(void* p)
+{
+    av_demuxer* obj = (av_demuxer*)p;
+    bool timeout = (duration_cast<seconds>( steady_clock::now() - obj->_ioStart).count() > 5);
+    // 1 means give up, 0 means keep going.
+    // We might need to stash an IO start time in p and then check here whether to return
+    // 1 or 0... For now just going with give up immediately.
+    return (timeout) ? 1 : 0;
+}
+
 void av_demuxer::_open_streams()
 {
+    _context = avformat_alloc_context();
+
+    _context->interrupt_callback.callback = av_demuxer::_io_interrupt_callback;
+    _context->interrupt_callback.opaque = this;
+    _ioStart = steady_clock::now();
     if( avformat_open_input( &_context, _fileName.c_str(), NULL, NULL ) < 0 )
-        CK_THROW(("Unable to open input file."));
+        CK_THROW(("Unable to open input file: %s",_fileName.c_str()));
 
     //_context->max_analyze_duration = 1;
 
     _streamTypes.clear();
 
+    _ioStart = steady_clock::now();
     if( avformat_find_stream_info( _context, NULL ) >= 0 )
     {
         for( int i = 0; i < (int)_context->nb_streams; i++ )
