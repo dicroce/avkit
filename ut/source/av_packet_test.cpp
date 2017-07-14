@@ -20,7 +20,7 @@ void av_packet_test::test_size_ctor_owning()
 {
     {
         shared_ptr<av_packet> pkt = make_shared<av_packet>(32768);
-        UT_ASSERT( pkt->_bufferSize == 32768 );
+        UT_ASSERT( pkt->_bufferSize > 32768 );
         UT_ASSERT( pkt->_requestedSize == 32768 );
         UT_ASSERT( pkt->_owning == true );
         UT_ASSERT( pkt->_buffer != NULL );
@@ -47,7 +47,7 @@ void av_packet_test::test_size_ctor_owning()
     {
         // test whether the buffer pads itself correctly
         shared_ptr<av_packet> pkt = make_shared<av_packet>(32766);
-        UT_ASSERT( pkt->_bufferSize == 32768 );
+        UT_ASSERT( pkt->_bufferSize > 32768 );
         UT_ASSERT( pkt->_requestedSize == 32766 );
         UT_ASSERT( pkt->_owning == true );
         UT_ASSERT( pkt->_buffer != NULL );

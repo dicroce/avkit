@@ -144,30 +144,29 @@ h264_encoder::~h264_encoder() throw()
 
 void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_type type )
 {
-    AVFrame frame;
-    av_frame_unref( &frame );
+    AVFrame* frame = av_frame_alloc();
 
     uint8_t* pic = input->map();
 
-    frame.data[0] = pic;
+    frame->data[0] = pic;
     pic += (_context->width * _context->height);
-    frame.data[1] = pic;
+    frame->data[1] = pic;
     pic += ((_context->width/4) * _context->height);
-    frame.data[2] = pic;
+    frame->data[2] = pic;
 
-    frame.linesize[0] = _context->width;
-    frame.linesize[1] = (_context->width/2);
-    frame.linesize[2] = (_context->width/2);
+    frame->linesize[0] = _context->width;
+    frame->linesize[1] = (_context->width/2);
+    frame->linesize[2] = (_context->width/2);
 
-    frame.format = _context->pix_fmt;
-    frame.width = _context->width;
-    frame.height = _context->height;
+    frame->format = _context->pix_fmt;
+    frame->width = _context->width;
+    frame->height = _context->height;
 
     if( type != FRAME_TYPE_AUTO_GOP )
     {
         if( type == FRAME_TYPE_KEY )
-            frame.pict_type = AV_PICTURE_TYPE_I;
-        else frame.pict_type = AV_PICTURE_TYPE_P;
+            frame->pict_type = AV_PICTURE_TYPE_I;
+        else frame->pict_type = AV_PICTURE_TYPE_P;
     }
 
     _output = _pf->get( DEFAULT_ENCODE_BUFFER_SIZE );
@@ -192,14 +191,25 @@ void h264_encoder::encode_yuv420p( shared_ptr<av_packet> input, encoder_frame_ty
 
         if( avcodec_encode_video2( _context,
                                    &pkt,
-                                   &frame,
+                                   frame,
                                    &gotPacket ) < 0 )
+        {
+            if(pkt.side_data)
+                av_packet_free_side_data(&pkt);
+
+            av_frame_free(&frame);
             CK_THROW(("Error while encoding."));
+        }
 
         attempts++;
 
     } while( gotPacket == 0 && (attempts < _encodeAttempts) );
 
+    if(pkt.side_data)
+        av_packet_free_side_data(&pkt);
+
+    av_frame_free(&frame);
+    
     if( pkt.flags & AV_PKT_FLAG_KEY )
     {
         _output->set_key( true );

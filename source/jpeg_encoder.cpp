@@ -78,22 +78,21 @@ jpeg_encoder::~jpeg_encoder() throw()
 
 void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
 {
-    AVFrame frame;
-    av_frame_unref( &frame );
+    AVFrame* frame = av_frame_alloc();
 
     _output = _pf->get( DEFAULT_JPEG_ENCODE_BUFFER_SIZE );
 
     uint8_t* pic = input->map();
 
-    frame.data[0] = pic;
+    frame->data[0] = pic;
     pic += (_context->width * _context->height);
-    frame.data[1] = pic;
+    frame->data[1] = pic;
     pic += ((_context->width/4) * _context->height);
-    frame.data[2] = pic;
+    frame->data[2] = pic;
 
-    frame.linesize[0] = _context->width;
-    frame.linesize[1] = (_context->width/2);
-    frame.linesize[2] = (_context->width/2);
+    frame->linesize[0] = _context->width;
+    frame->linesize[1] = (_context->width/2);
+    frame->linesize[2] = (_context->width/2);
 
     int attempt = 0;
     int gotPacket = 0;
@@ -107,13 +106,23 @@ void jpeg_encoder::encode_yuv420p( shared_ptr<av_packet> input )
 
         if( avcodec_encode_video2( _context,
                                    &pkt,
-                                   &frame,
+                                   frame,
                                    &gotPacket ) < 0 )
-            CK_THROW(("Error while encoding."));
+        {
+            if(pkt.side_data)
+                av_packet_free_side_data(&pkt);
 
+            av_frame_free(&frame);
+            CK_THROW(("Error while encoding."));
+        }
         attempt++;
 
     } while( gotPacket == 0 && (attempt < _encodeAttempts) );
+
+    if(pkt.side_data)
+        av_packet_free_side_data(&pkt);
+
+    av_frame_free(&frame);
 
     _output->set_width( _context->width );
     _output->set_height( _context->height );

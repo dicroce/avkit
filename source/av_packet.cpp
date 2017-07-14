@@ -94,20 +94,21 @@ av_packet::av_packet( const av_packet& obj ) :
     migrate_md_from( obj );
 }
 
-av_packet::av_packet( av_packet&& obj ) throw() :
-    _bufferSize( std::move( obj._bufferSize ) ),
-    _requestedSize( std::move( obj._requestedSize ) ),
-    _owning( std::move( obj._owning ) ),
-    _buffer( std::move( obj._buffer ) ),
-    _dataSize( std::move( obj._dataSize ) ),
-    _pts( std::move( obj._pts ) ),
-    _dts( std::move( obj._dts ) ),
-    _ticksInSecond( std::move( obj._ticksInSecond ) ),
-    _key( std::move( obj._key ) ),
-    _width( std::move( obj._width ) ),
-    _height( std::move( obj._height ) ),
-    _duration( std::move( obj._duration ) )
+av_packet::av_packet( av_packet&& obj ) throw()
 {
+    _bufferSize = std::move( obj._bufferSize );
+    _requestedSize = std::move( obj._requestedSize );
+    _owning = std::move( obj._owning );
+    _buffer = std::move( obj._buffer );
+    _dataSize = std::move( obj._dataSize );
+    _pts = std::move( obj._pts );
+    _dts = std::move( obj._dts );
+    _ticksInSecond = std::move( obj._ticksInSecond );
+    _key = std::move( obj._key );
+    _width = std::move( obj._width );
+    _height = std::move( obj._height );
+    _duration = std::move( obj._duration );
+
     obj._buffer = NULL;
     obj._bufferSize = 0;
     obj._dataSize = 0;
@@ -146,6 +147,8 @@ av_packet& av_packet::operator = ( const av_packet& obj )
 
 av_packet& av_packet::operator = ( av_packet&& obj ) throw()
 {
+    _clear();
+
     _bufferSize = std::move( obj._bufferSize );
     _requestedSize = std::move( obj._requestedSize );
     _owning = std::move( obj._owning );

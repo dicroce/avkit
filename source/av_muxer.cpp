@@ -5,6 +5,7 @@
 extern "C"
 {
 #include "libavutil/opt.h"
+#include "libavcodec/avcodec.h"
 }
 
 using namespace avkit;
@@ -58,7 +59,7 @@ av_muxer::av_muxer( const struct codec_options& options,
     _stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if( _context->oformat->flags & AVFMT_GLOBALHEADER )
-        _stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        _stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
 }
 
 av_muxer::~av_muxer() throw()

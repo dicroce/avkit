@@ -12,6 +12,8 @@ set(SOURCES source/framework.cpp
 
 set(COMMON_LIBS cppkit avkit)
 
+set(APPLICATION_TYPE NORMAL)
+
 include_directories(/usr/include/ffmpeg)
 
 include(common.cmake NO_POLICY_SCOPE)

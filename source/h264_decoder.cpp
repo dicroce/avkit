@@ -7,6 +7,7 @@
 extern "C"
 {
 #include "libavutil/opt.h"
+#include "libavutil/frame.h"
 }
 
 using namespace avkit;
