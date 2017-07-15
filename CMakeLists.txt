@@ -19,6 +19,7 @@ set(SOURCES include/avkit/bgra_to_yuv420p.h
             include/avkit/utils.h
             include/avkit/yuv420p_to_bgra.h
             include/avkit/yuv420p_to_rgba.h
+            include/avkit/v4l2_muxer.h
             source/yuv420p_to_rgba.cpp
             source/bgra_to_yuv420p.cpp
             source/yuv420p_to_bgra.cpp
@@ -33,10 +34,11 @@ set(SOURCES include/avkit/bgra_to_yuv420p.h
             source/locky.cpp
             source/utils.cpp
             source/av_packet.cpp
-            source/av_packet_factory.cpp)
+            source/av_packet_factory.cpp
+            source/v4l2_muxer.cpp)
 
-set(COMMON_LIBS cppkit avcodec avformat swscale avfilter avutil)
-#set(THIRD_PARTY_LIBS avcodec avformat swscale avfilter avutil)
+set(COMMON_LIBS cppkit avcodec avformat swscale avfilter avutil avdevice)
+#set(THIRD_PARTY_LIBS avcodec avformat swscale avfilter avutil avdevice)
 
 if(CMAKE_SYSTEM MATCHES "Linux-")
     include_directories(/usr/include/ffmpeg)
