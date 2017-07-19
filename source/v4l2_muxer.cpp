@@ -46,10 +46,6 @@ v4l2_muxer::v4l2_muxer( const struct codec_options& options,
 
     _apply_codec_options( options );
 
-    if( !_options.gop_size.is_null() )
-        _stream->codec->gop_size = _options.gop_size.value();
-    else CK_THROW(("Required option missing: gop_size"));
-
     _stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
 }
 

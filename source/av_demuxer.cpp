@@ -208,7 +208,7 @@ shared_ptr<av_packet> av_demuxer::get() const
 
     auto clockRate = get_time_base( _deMuxPkt.stream_index );
 
-    pkt->set_ts_freq( clockRate.second );
+    pkt->set_ts_freq( clockRate.second * _deMuxPkt.duration );
 
     if( is_key() )
         pkt->set_key( true );
